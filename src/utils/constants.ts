@@ -159,6 +159,47 @@ export const PERCENT_RING_SIZE = 100
 export const PERCENT_RING_STROKE = 6
 export const PERCENT_RING_MIN_DISPLAY = 0.5
 
+// Conversion
+export const FEET_PER_MILE = 5_280
+
+// Fun fact reference data
+export const MEDIAN_US_HOME_PRICE = 420_000
+export const MEDIAN_US_SALARY = 59_000
+export const MOON_DISTANCE_MILES = 238_900
+export const PRIVATE_JET_PRICE = 70_000_000
+export const MEGA_YACHT_PRICE = 600_000_000
+export const GOLD_PRICE_PER_OUNCE = 2_000
+export const OUNCES_PER_METRIC_TON = 32_150
+export const GDP_COMPARISONS = [
+  { country: 'Tuvalu', gdp: 60_000_000 },
+  { country: 'Nauru', gdp: 150_000_000 },
+  { country: 'Palau', gdp: 260_000_000 },
+  { country: 'Iceland', gdp: 28_000_000_000 },
+  { country: 'Luxembourg', gdp: 85_000_000_000 },
+] as const
+
+// UserParticle (3D) – additional
+export const USER_PARTICLE_FALLBACK_RADIUS = 0.05
+export const USER_PARTICLE_MATERIAL_COLOR = '#ffffff'
+export const USER_PARTICLE_EMISSIVE_INTENSITY = 0.8
+export const USER_PARTICLE_FLOAT_SPEED = 2
+export const USER_PARTICLE_FLOAT_INTENSITY = 0.5
+export const USER_PARTICLE_SPARKLE_SCALE = 0.5
+export const USER_PARTICLE_LABEL_Y_GAP = 0.3
+export const USER_PARTICLE_SUB_LABEL_Y_GAP = 0.25
+export const USER_PARTICLE_SUB_LABEL_COLOR = '#00d4ff'
+export const USER_PARTICLE_LINE_DASH_SIZE = 0.2
+export const USER_PARTICLE_LINE_GAP_SIZE = 0.15
+export const USER_PARTICLE_LINE_OPACITY = 0.4
+
+// PercentRing SVG
+export const PERCENT_RING_BG_STROKE = 'rgba(255,255,255,0.1)'
+export const PERCENT_RING_FG_STROKE = '#00d4ff'
+
+// FunFactCard shimmer
+export const FUN_FACT_SHIMMER_GRADIENT =
+  'linear-gradient(135deg, #00d4ff 0%, #ffd700 25%, #ff44aa 50%, #00ff88 75%, #00d4ff 100%)'
+
 // Panel animation timings
 export const COMPARISON_BAR_SPRING = { stiffness: 300, damping: 30 }
 export const COMPARISON_RESULTS_STAGGER_DELAY = 0.12

@@ -1,24 +1,23 @@
 import { motion, AnimatePresence } from 'motion/react'
 import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react'
-import { useAppStore } from '@/stores'
+import { useSelectedBillionaire } from '@/hooks/useSelectedBillionaire'
 import { useFunFact } from '@/hooks/useFunFact'
-import { FUN_FACT_SLIDE_DELAY } from '@/utils/constants'
+import {
+  FUN_FACT_SLIDE_DELAY,
+  FUN_FACT_SHIMMER_GRADIENT,
+} from '@/utils/constants'
 
 export function FunFactCard() {
-  const showComparison = useAppStore((s) => s.showComparison)
-  const selectedUri = useAppStore((s) => s.selectedUri)
-  const billionaires = useAppStore((s) => s.billionaires)
-
-  const target = billionaires.find((b) => b.uri === selectedUri)
-  const { fact, total, index, next, previous } = useFunFact(
+  const target = useSelectedBillionaire()
+  const { fact, total, index, next, previous, goToIndex } = useFunFact(
     target?.networth ?? 0,
   )
 
-  if (!showComparison || !target || !fact) return null
+  if (!target || !fact) return null
 
   return (
     <motion.div
-      className="glass-panel fixed bottom-28 left-4 z-40 max-w-sm overflow-hidden p-5"
+      className="glass-panel pointer-events-auto fixed bottom-28 left-4 z-40 max-w-sm overflow-hidden p-5"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
@@ -33,8 +32,7 @@ export function FunFactCard() {
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
-          background:
-            'linear-gradient(135deg, #00d4ff 0%, #ffd700 25%, #ff44aa 50%, #00ff88 75%, #00d4ff 100%)',
+          background: FUN_FACT_SHIMMER_GRADIENT,
           backgroundSize: '200% 200%',
           animation: 'shimmer 6s ease infinite',
         }}
@@ -78,8 +76,12 @@ export function FunFactCard() {
           {/* Dot indicators */}
           <div className="flex gap-1">
             {Array.from({ length: total }, (_, i) => (
-              <div
+              <button
                 key={i}
+                type="button"
+                onClick={() => goToIndex(i)}
+                aria-label={`Go to fact ${i + 1} of ${total}`}
+                aria-current={i === index ? 'true' : undefined}
                 className={`h-1.5 w-1.5 rounded-full transition-colors ${
                   i === index ? 'bg-ws-accent' : 'bg-white/20'
                 }`}

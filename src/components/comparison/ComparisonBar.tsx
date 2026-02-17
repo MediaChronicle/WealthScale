@@ -3,10 +3,10 @@ import { motion } from 'motion/react'
 import { DollarSign, X } from 'lucide-react'
 import { useAppStore } from '@/stores'
 import type { ComparisonResults } from '@/stores/userStore'
+import { useSelectedBillionaire } from '@/hooks/useSelectedBillionaire'
 import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   scaleRatioPercent,
   ratioString,
@@ -38,18 +38,18 @@ function computeResults(
 export function ComparisonBar() {
   const [inputValue, setInputValue] = useState('')
   const [sliderValue, setSliderValue] = useState(0)
+  const [focused, setFocused] = useState(false)
 
   const showComparison = useAppStore((s) => s.showComparison)
   const netWorth = useAppStore((s) => s.netWorth)
   const selectedUri = useAppStore((s) => s.selectedUri)
-  const billionaires = useAppStore((s) => s.billionaires)
   const setNetWorth = useAppStore((s) => s.setNetWorth)
   const setShowComparison = useAppStore((s) => s.setShowComparison)
   const setComparisonResults = useAppStore((s) => s.setComparisonResults)
   const setLeaderboardOpen = useAppStore((s) => s.setLeaderboardOpen)
   const resetRace = useAppStore((s) => s.resetRace)
 
-  const target = billionaires.find((b) => b.uri === selectedUri)
+  const target = useSelectedBillionaire()
 
   const handleCompare = useCallback(
     (dollars: number) => {
@@ -120,13 +120,12 @@ export function ComparisonBar() {
     }
   }, [selectedUri, showComparison, netWorth, target, setComparisonResults])
 
-  if (!selectedUri) return null
-
   return (
     <motion.div
-      className="fixed bottom-0 right-0 left-0 z-50 p-4"
+      className="pointer-events-auto fixed bottom-0 right-0 left-0 z-50 p-4"
       initial={{ y: 100 }}
       animate={{ y: 0 }}
+      exit={{ y: 100, opacity: 0 }}
       transition={{
         type: 'spring',
         stiffness: COMPARISON_BAR_SPRING.stiffness,
@@ -150,6 +149,7 @@ export function ComparisonBar() {
                 size="icon"
                 className="h-6 w-6"
                 onClick={handleClose}
+                aria-label="Close comparison"
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -166,9 +166,18 @@ export function ComparisonBar() {
                 type="text"
                 inputMode="numeric"
                 placeholder="Enter your net worth or salary"
-                value={inputValue ? parseInt(inputValue).toLocaleString() : ''}
+                value={
+                  focused
+                    ? inputValue
+                    : inputValue
+                      ? parseInt(inputValue).toLocaleString()
+                      : ''
+                }
                 onChange={handleInputChange}
-                className="pl-7 font-mono"
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                aria-label="Your net worth in dollars"
+                className="pl-7 font-mono tabular-nums"
               />
             </div>
             <Button type="submit" size="sm" className="shrink-0">
@@ -182,20 +191,22 @@ export function ComparisonBar() {
             onValueChange={handleSliderChange}
             max={COMPARISON_SLIDER_MAX}
             step={COMPARISON_SLIDER_STEP}
+            aria-label="Adjust net worth"
             className="py-1"
           />
 
           {/* Presets */}
           <div className="flex flex-wrap gap-2">
             {COMPARISON_PRESETS.map((preset) => (
-              <Badge
+              <button
                 key={preset.value}
-                variant="secondary"
-                className="cursor-pointer transition-colors hover:bg-ws-accent hover:text-ws-bg"
+                type="button"
+                className="inline-flex items-center rounded-md border border-ws-border bg-ws-glass px-2.5 py-0.5 font-body text-xs text-ws-text-primary transition-colors hover:bg-ws-accent hover:text-ws-bg"
+                aria-label={`Use ${preset.label} (${preset.display})`}
                 onClick={() => handlePreset(preset.value)}
               >
                 {preset.label} ({preset.display})
-              </Badge>
+              </button>
             ))}
           </div>
         </form>

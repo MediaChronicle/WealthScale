@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'motion/react'
+import { motion } from 'motion/react'
 import { Scale, Clock, Layers, Percent } from 'lucide-react'
 import { useAppStore } from '@/stores'
 import type { ComparisonResults as ComparisonResultsData } from '@/stores/userStore'
@@ -8,6 +8,9 @@ import {
   PERCENT_RING_SIZE,
   PERCENT_RING_STROKE,
   PERCENT_RING_MIN_DISPLAY,
+  PERCENT_RING_BG_STROKE,
+  PERCENT_RING_FG_STROKE,
+  FEET_PER_MILE,
 } from '@/utils/constants'
 
 function PercentRing({ percent }: { percent: number }) {
@@ -28,7 +31,7 @@ function PercentRing({ percent }: { percent: number }) {
         cy={PERCENT_RING_SIZE / 2}
         r={PERCENT_RING_RADIUS}
         fill="none"
-        stroke="rgba(255,255,255,0.1)"
+        stroke={PERCENT_RING_BG_STROKE}
         strokeWidth={PERCENT_RING_STROKE}
       />
       {/* Animated foreground ring */}
@@ -37,7 +40,7 @@ function PercentRing({ percent }: { percent: number }) {
         cy={PERCENT_RING_SIZE / 2}
         r={PERCENT_RING_RADIUS}
         fill="none"
-        stroke="#00d4ff"
+        stroke={PERCENT_RING_FG_STROKE}
         strokeWidth={PERCENT_RING_STROKE}
         strokeLinecap="round"
         strokeDasharray={circumference}
@@ -80,7 +83,7 @@ function StatRow({ icon, label, value, highlight, index }: StatRowProps) {
       <div className="flex-1">
         <p className="text-xs text-ws-text-secondary">{label}</p>
         <p
-          className={`font-mono text-sm font-semibold ${highlight ? 'text-ws-gold' : 'text-ws-text-primary'}`}
+          className={`font-mono text-sm font-semibold tabular-nums ${highlight ? 'text-ws-gold' : 'text-ws-text-primary'}`}
         >
           {value}
         </p>
@@ -90,60 +93,57 @@ function StatRow({ icon, label, value, highlight, index }: StatRowProps) {
 }
 
 export function ComparisonResults() {
-  const showComparison = useAppStore((s) => s.showComparison)
   const comparisonResults = useAppStore(
     (s) => s.comparisonResults,
   ) as ComparisonResultsData | null
 
-  if (!showComparison || !comparisonResults) return null
+  if (!comparisonResults) return null
 
   return (
-    <AnimatePresence>
-      <motion.div
-        className="glass-panel fixed top-1/2 right-4 z-40 w-80 -translate-y-1/2 space-y-4 p-5"
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 100 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      >
-        <h3 className="text-center font-display text-sm font-semibold text-ws-text-primary">
-          Your Wealth vs Theirs
-        </h3>
+    <motion.div
+      className="glass-panel pointer-events-auto fixed top-1/2 right-4 z-40 w-80 -translate-y-1/2 space-y-4 p-5"
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+    >
+      <h3 className="text-center font-display text-sm font-semibold text-ws-text-primary">
+        Your Wealth vs Theirs
+      </h3>
 
-        <PercentRing percent={comparisonResults.scalePercent} />
+      <PercentRing percent={comparisonResults.scalePercent} />
 
-        <div className="space-y-2">
-          <StatRow
-            icon={<Scale className="h-4 w-4" />}
-            label="Ratio"
-            value={comparisonResults.ratio}
-            index={0}
-          />
-          <StatRow
-            icon={<Clock className="h-4 w-4" />}
-            label="Time to earn their fortune"
-            value={comparisonResults.timeToEarn}
-            highlight
-            index={1}
-          />
-          <StatRow
-            icon={<Layers className="h-4 w-4" />}
-            label="Your $100 bill stack"
-            value={`${comparisonResults.userStackFeet.toFixed(1)} ft`}
-            index={2}
-          />
-          <StatRow
-            icon={<Percent className="h-4 w-4" />}
-            label="Their $100 bill stack"
-            value={
-              comparisonResults.billionaireStackFeet >= 5280
-                ? `${(comparisonResults.billionaireStackFeet / 5280).toFixed(1)} miles`
-                : `${comparisonResults.billionaireStackFeet.toFixed(0)} ft`
-            }
-            index={3}
-          />
-        </div>
-      </motion.div>
-    </AnimatePresence>
+      <div className="space-y-2">
+        <StatRow
+          icon={<Scale className="h-4 w-4" />}
+          label="Ratio"
+          value={comparisonResults.ratio}
+          index={0}
+        />
+        <StatRow
+          icon={<Clock className="h-4 w-4" />}
+          label="Time to earn their fortune"
+          value={comparisonResults.timeToEarn}
+          highlight
+          index={1}
+        />
+        <StatRow
+          icon={<Layers className="h-4 w-4" />}
+          label="Your $100 bill stack"
+          value={`${comparisonResults.userStackFeet.toFixed(1)} ft`}
+          index={2}
+        />
+        <StatRow
+          icon={<Percent className="h-4 w-4" />}
+          label="Their $100 bill stack"
+          value={
+            comparisonResults.billionaireStackFeet >= FEET_PER_MILE
+              ? `${(comparisonResults.billionaireStackFeet / FEET_PER_MILE).toFixed(1)} miles`
+              : `${comparisonResults.billionaireStackFeet.toFixed(0)} ft`
+          }
+          index={3}
+        />
+      </div>
+    </motion.div>
   )
 }

@@ -68,7 +68,10 @@ When a billionaire is selected, a comparison overlay activates:
 - **`FunFactCard`** — fixed bottom-left panel; rotating facts from `useFunFact` hook
 - **`UserParticle`** — R3F 3D particle that floats near the selected planet, sized proportional to user vs. billionaire wealth
 
-When `showComparison` is true, `DetailPanel` is hidden. All comparison components self-hide when `!selectedUri` or `!showComparison`.
+When `showComparison` is true, `DetailPanel` is hidden. Comparison components live **outside** the `pointer-events-none` HUD wrapper in `App.tsx`; each is mounted/unmounted via its own `<AnimatePresence>` with the correct condition (`selectedUri`, `showComparison`, `comparisonResults`, `netWorth > 0`). Components must have `pointer-events-auto` on their outer `motion.div`. Do **not** use early-return guards for visibility — that breaks exit animations.
+
+- `useSelectedBillionaire()` hook (granular selectors + `useMemo`) replaces `.find()` calls in all comparison components. Never subscribe to `billionaires` array just to call `.find()` inline.
+- `useFunFact` returns `{ fact, total, index, next, previous, goToIndex }`. Manual nav (`next`, `previous`, `goToIndex`) resets the auto-rotation timer so the user has time to read.
 
 Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Comparison Engine =====` section of `constants.ts`.
 
@@ -79,7 +82,7 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - `src/scene/` — all R3F 3D components, organized by mode (`cosmos/`, `towers/`, `ocean/`, `timeline/`, `shared/`)
 - `src/scene/cosmos/shaders/` — GLSL shader source strings (e.g., `sunShader.ts` for the WealthSun plasma effect)
 - `src/components/` — 2D DOM UI organized by feature (`detail/`, `leaderboard/`, `comparison/`, `layout/`, `modeSwitcher/`, `funFacts/`, `achievements/`, `ui/`)
-- `src/hooks/` — custom React hooks (`useIsMobile.ts`, etc.)
+- `src/hooks/` — custom React hooks (`useIsMobile.ts`, `useSelectedBillionaire.ts`, `useFunFact.ts`, etc.)
 - `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `wealthComparison.ts`, `colorByIndustry.ts`, `constants.ts`
 - `src/types/index.ts` — all shared TypeScript types
 - `doc/` — PRD and phase-by-phase implementation plans (PHASE-1 through PHASE-5)
@@ -108,7 +111,7 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 ### React Three Fiber
 
 - **Never `setState` in `useFrame`** — mutate refs directly for 60fps performance.
-- Reuse geometries/materials via `useMemo`. **Dispose on unmount** with a `useEffect` cleanup (`geometry.dispose()`, `material.dispose()`).
+- Reuse geometries/materials via `useMemo`. **Dispose on unmount** with a `useEffect` cleanup (`geometry.dispose()`, `material.dispose()`). For size-varying meshes, create a **unit geometry once** (e.g., `SphereGeometry(1, …)`) as a module-level constant and control size via `mesh.scale` — never re-create geometry per radius change.
 - Use drei's `useCursor(hovered)` hook for cursor changes — never manipulate `document.body.style.cursor` directly.
 - Use `<Instances>` for repeated meshes (particles, stars).
 - Post-processing (`Bloom`, `Vignette`, `ChromaticAberration`) is lazy-loaded via `React.lazy` and disabled on mobile (checked via `useIsMobile` hook).
@@ -128,7 +131,7 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 
 - `useFrame` — per-frame 3D (rotation, orbit, position updates)
 - `@react-spring/three` — camera fly-to on planet selection (`CameraController`), hover/scale spring on planets (`animated.mesh`), label fade springs
-- `motion/react` — 2D UI panel enter/exit animations (`AnimatePresence` for `DetailPanel`, slide animations for `LeaderboardSidebar`)
+- `motion/react` — 2D UI panel enter/exit animations. Use **individual** `<AnimatePresence>` per component (not a shared wrapper); the condition goes on the `<AnimatePresence>` child, not as an early return inside the component. Pattern: `<AnimatePresence>{condition && <Panel />}</AnimatePresence>`.
 - GSAP — counter animations, scroll-driven effects
 
 ### API

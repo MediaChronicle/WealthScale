@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { Play, RotateCcw, Zap } from 'lucide-react'
 import gsap from 'gsap'
 import { useAppStore } from '@/stores'
+import { useSelectedBillionaire } from '@/hooks/useSelectedBillionaire'
 import { Button } from '@/components/ui/button'
 import { earningsPerSecond, accumulatedWealth } from '@/utils/wealthComparison'
 import { formatDollars } from '@/utils/formatWealth'
@@ -22,17 +23,14 @@ export function WealthRace() {
   const billionaireBarRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<HTMLSpanElement>(null)
 
-  const showComparison = useAppStore((s) => s.showComparison)
   const netWorth = useAppStore((s) => s.netWorth)
-  const selectedUri = useAppStore((s) => s.selectedUri)
-  const billionaires = useAppStore((s) => s.billionaires)
   const wealthRace = useAppStore((s) => s.wealthRace)
   const startRace = useAppStore((s) => s.startRace)
   const updateRace = useAppStore((s) => s.updateRace)
   const finishRace = useAppStore((s) => s.finishRace)
   const resetRace = useAppStore((s) => s.resetRace)
 
-  const target = billionaires.find((b) => b.uri === selectedUri)
+  const target = useSelectedBillionaire()
 
   const handleStart = useCallback(() => {
     if (!target || netWorth <= 0) return
@@ -97,7 +95,7 @@ export function WealthRace() {
     }
   }, [])
 
-  if (!showComparison || !target || netWorth <= 0 || !selectedUri) return null
+  if (!target) return null
 
   const multiplier =
     wealthRace.status === 'finished' && wealthRace.userAccumulated > 0
@@ -108,7 +106,7 @@ export function WealthRace() {
 
   return (
     <motion.div
-      className="glass-panel fixed right-4 bottom-28 z-40 w-80 p-5"
+      className="glass-panel pointer-events-auto fixed right-4 bottom-28 z-40 w-80 p-5"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
@@ -129,7 +127,8 @@ export function WealthRace() {
         {wealthRace.status !== 'idle' && (
           <span
             ref={timerRef}
-            className="font-mono text-xs text-ws-text-secondary"
+            aria-label="Race timer"
+            className="font-mono text-xs tabular-nums text-ws-text-secondary"
           >
             0.0s
           </span>
@@ -141,7 +140,11 @@ export function WealthRace() {
         <div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-ws-text-secondary">You</span>
-            <span ref={userDisplayRef} className="font-mono text-ws-accent">
+            <span
+              ref={userDisplayRef}
+              aria-label="Your earnings"
+              className="font-mono tabular-nums text-ws-accent"
+            >
               $0
             </span>
           </div>
@@ -162,7 +165,8 @@ export function WealthRace() {
             </span>
             <span
               ref={billionaireDisplayRef}
-              className="font-mono text-ws-gold"
+              aria-label="Their earnings"
+              className="font-mono tabular-nums text-ws-gold"
             >
               $0
             </span>
@@ -193,9 +197,9 @@ export function WealthRace() {
         )}
 
         {wealthRace.status === 'finished' && (
-          <div className="space-y-2">
+          <div className="space-y-2" role="status" aria-live="polite">
             {multiplier > 0 && (
-              <p className="text-center font-mono text-sm text-ws-gold">
+              <p className="text-center font-mono text-sm tabular-nums text-ws-gold">
                 They earned{' '}
                 <span className="text-lg font-bold">
                   {multiplier.toLocaleString()}x

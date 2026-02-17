@@ -65,6 +65,12 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 - **Disable post-processing** on mobile (`< 768px`).
 - **Use `@react-spring/three`** for smooth 3D animations.
 - **Lazy-load heavy components** with `React.lazy()` + `Suspense`.
+- **3D Geometry scaling**: Create **unit geometry once** (e.g., `SphereGeometry(1, …)`) as a module-level constant and control size via `mesh.scale` — never re-create geometry per radius change.
+
+### Custom Hooks
+
+- **`useSelectedBillionaire()`** — Returns the currently selected billionaire using granular selectors + `useMemo`. Replaces inline `.find()` calls in components. Never subscribe to `billionaires` array just to call `.find()` inline.
+- **`useFunFact(networth)`** — Returns `{ fact, total, index, next, previous, goToIndex }`. Manual navigation (`next`, `previous`, `goToIndex`) resets the auto-rotation timer.
 
 ### State Management (Zustand)
 
@@ -98,12 +104,21 @@ interface WealthRaceState {
 }
 ```
 
+### Animation Patterns (motion/react)
+
+- **Individual `<AnimatePresence>` per component** — not a shared wrapper. Each overlay component mounts/unmounts via its own `<AnimatePresence>`.
+- **Condition on the child** — put the condition (`selectedUri`, `showComparison`, etc.) on the motion component inside `<AnimatePresence>`, not as an early return inside the component.
+- **Exit animations require condition on child** — early-return guards break exit animations.
+- **Pattern**: `<AnimatePresence>{condition && <Panel />}</AnimatePresence>` in parent, no early returns in Panel component.
+- **Pointer events**: Overlay components outside the `pointer-events-none` HUD wrapper need `pointer-events-auto` on their outer `motion.div`.
+
 ### Styling (Tailwind CSS v4)
 
 - **CSS-first config** — no `tailwind.config.js`. Tokens in `src/index.css` via `@theme`.
 - **WealthScale colors** use `--ws-*` CSS variables (`bg-ws-glass`, `text-ws-accent`).
 - **Glass panel pattern**: `bg-ws-glass backdrop-blur-xl border border-ws-border rounded-2xl`
 - **Dark theme only** — `.dark` is permanently on `<html>`.
+- **Numeric displays**: Use `tabular-nums` class for numbers (prevents layout shift during counting animations).
 
 ### Error Handling
 
@@ -131,7 +146,7 @@ src/
 │   ├── funFacts/     # Fun fact cards and overlays
 │   ├── leaderboard/  # Leaderboard sidebar
 │   └── ui/           # shadcn/ui primitives
-├── hooks/            # Custom React hooks (useFunFact.ts, useIsMobile.ts)
+├── hooks/            # Custom React hooks (useIsMobile.ts, useSelectedBillionaire.ts, useFunFact.ts, etc.)
 ├── scene/            # R3F 3D components organized by mode
 │   ├── cosmos/       # Solar system mode
 │   └── shared/       # Shared 3D components (UserParticle.tsx)

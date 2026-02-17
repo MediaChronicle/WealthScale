@@ -23,10 +23,7 @@ export function TimeToEarn() {
   const tweenRef = useRef<gsap.core.Tween | null>(null)
   const counterObj = useRef({ value: 0 })
 
-  const showComparison = useAppStore((s) => s.showComparison)
   const comparisonResults = useAppStore((s) => s.comparisonResults)
-  const netWorth = useAppStore((s) => s.netWorth)
-  const selectedUri = useAppStore((s) => s.selectedUri)
 
   const formatted = useMemo(() => {
     if (!comparisonResults) return null
@@ -59,12 +56,9 @@ export function TimeToEarn() {
     }
   }, [formatted])
 
-  if (!showComparison || !comparisonResults || netWorth <= 0 || !selectedUri)
-    return null
-
   return (
     <motion.div
-      className="glass-panel fixed top-24 left-4 z-40 max-w-xs p-5"
+      className="glass-panel pointer-events-auto fixed top-24 left-4 z-40 max-w-xs p-5"
       initial={{ opacity: 0, x: -100 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -100 }}
@@ -82,10 +76,10 @@ export function TimeToEarn() {
         </h3>
       </div>
 
-      <div className="mt-3 text-center">
+      <div className="mt-3 text-center" role="status" aria-live="polite">
         <span
           ref={displayRef}
-          className="font-mono text-4xl font-bold text-ws-gold"
+          className="font-mono text-4xl font-bold tabular-nums text-ws-gold"
         >
           0
         </span>

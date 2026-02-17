@@ -60,6 +60,8 @@ export default function App() {
   const setBillionaires = useAppStore((s) => s.setBillionaires)
   const selectedUri = useAppStore((s) => s.selectedUri)
   const showComparison = useAppStore((s) => s.showComparison)
+  const comparisonResults = useAppStore((s) => s.comparisonResults)
+  const netWorth = useAppStore((s) => s.netWorth)
   const leaderboardOpen = useAppStore((s) => s.leaderboardOpen)
   const setLeaderboardOpen = useAppStore((s) => s.setLeaderboardOpen)
 
@@ -160,11 +162,21 @@ export default function App() {
       </div>
 
       {/* Comparison overlay components */}
-      <ComparisonBar />
-      <ComparisonResults />
-      <TimeToEarn />
-      <WealthRace />
-      <FunFactCard />
+      <AnimatePresence>{selectedUri && <ComparisonBar />}</AnimatePresence>
+      <AnimatePresence>
+        {showComparison && comparisonResults && <ComparisonResults />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showComparison && comparisonResults && netWorth > 0 && selectedUri && (
+          <TimeToEarn />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showComparison && selectedUri && netWorth > 0 && <WealthRace />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showComparison && selectedUri && <FunFactCard />}
+      </AnimatePresence>
     </div>
   )
 }
