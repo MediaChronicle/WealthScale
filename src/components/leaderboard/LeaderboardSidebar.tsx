@@ -3,6 +3,11 @@ import { Trophy, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAppStore } from '@/stores'
 import { LeaderboardRow } from './LeaderboardRow'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  SIDEBAR_SLIDE_X,
+  UI_SPRING_STIFFNESS,
+  UI_SPRING_DAMPING,
+} from '@/utils/constants'
 
 interface LeaderboardSidebarProps {
   isOpen: boolean
@@ -11,13 +16,13 @@ interface LeaderboardSidebarProps {
 
 const sidebarVariants = {
   open: { x: 0 },
-  closed: { x: -320 },
+  closed: { x: SIDEBAR_SLIDE_X },
 }
 
 const springTransition = {
   type: 'spring' as const,
-  stiffness: 200,
-  damping: 25,
+  stiffness: UI_SPRING_STIFFNESS,
+  damping: UI_SPRING_DAMPING,
 }
 
 export function LeaderboardSidebar({
@@ -37,7 +42,10 @@ export function LeaderboardSidebar({
       transition={springTransition}
     >
       {/* Panel */}
-      <div className="glass-panel flex flex-1 flex-col overflow-hidden">
+      <div
+        className="glass-panel flex flex-1 flex-col overflow-hidden"
+        inert={!isOpen || undefined}
+      >
         {/* Header */}
         <div className="flex items-center gap-2 border-b border-ws-border px-4 py-3">
           <Trophy className="h-4 w-4 text-ws-gold" />
@@ -48,16 +56,17 @@ export function LeaderboardSidebar({
 
         {/* List */}
         <ScrollArea className="flex-1">
-          <div className="space-y-1 p-2">
+          <ul role="list" className="space-y-1 p-2">
             {billionaires.map((entry) => (
-              <LeaderboardRow
-                key={entry.uri}
-                entry={entry}
-                isSelected={selectedUri === entry.uri}
-                onSelect={selectBillionaire}
-              />
+              <li key={entry.uri}>
+                <LeaderboardRow
+                  entry={entry}
+                  isSelected={selectedUri === entry.uri}
+                  onSelect={selectBillionaire}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         </ScrollArea>
 
         {/* Footer */}
@@ -71,6 +80,8 @@ export function LeaderboardSidebar({
       {/* Toggle button */}
       <button
         onClick={onToggle}
+        aria-label={isOpen ? 'Collapse leaderboard' : 'Expand leaderboard'}
+        aria-expanded={isOpen}
         className="glass-panel -mr-3 mt-4 flex h-10 w-6 items-center justify-center self-start rounded-l-none rounded-r-lg transition-colors hover:bg-ws-glass-hover"
       >
         {isOpen ? (

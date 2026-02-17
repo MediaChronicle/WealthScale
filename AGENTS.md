@@ -1,10 +1,10 @@
 # WealthScale Agent Guidelines
 
-This file provides guidance for AI agents operating in the WealthScale codebase.
+Guidance for AI agents operating in the WealthScale codebase.
 
 ## Project Overview
 
-WealthScale is a 3D interactive wealth visualization app that renders billionaire fortunes as explorable 3D worlds (solar system, city skyline, ocean depths, time tunnel). Pure client-side SPA built with React, TypeScript, Vite, Three.js, and Zustand.
+WealthScale is a 3D interactive wealth visualization app rendering billionaire fortunes as explorable 3D worlds (solar system, city skyline, ocean depths, time tunnel). Pure client-side SPA built with React 19, TypeScript 5.9, Vite 7, Three.js, React Three Fiber, and Zustand.
 
 ## Build & Development Commands
 
@@ -20,20 +20,7 @@ pnpm format:check     # Check formatting without modifying files
 pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 ```
 
-**Husky hooks**: pre-commit (lint-staged), pre-push. lint-staged runs ESLint --fix + Prettier on staged `.ts/.tsx` files.
-
-## Performance Optimization
-
-**Manual Code Splitting**: Vite config uses `manualChunks` to split vendor libraries:
-
-- `react-vendor` — React + React DOM + scheduler
-- `three-vendor` — Three.js core
-- `r3f-vendor` — @react-three/\* + Zustand
-- `postprocessing-vendor` — Post-processing effects
-- `animation-vendor` — Motion + GSAP + react-spring
-- `ui-vendor` — TanStack Query + Zod + Radix + Lucide
-
-**Mobile Optimization**: Post-processing is disabled on mobile devices (`< 768px`).
+**Husky hooks**: pre-commit runs `lint-staged` (ESLint --fix + Prettier on staged `.ts/.tsx` files).
 
 ## Code Style Guidelines
 
@@ -42,9 +29,9 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 - **Always use `@/` path alias** (maps to `src/`). Never use relative paths beyond one level.
   - ✅ `import { cn } from "@/lib/utils"`
   - ❌ `import { cn } from "../../lib/utils"`
-- **Use `import type`** for type-only imports (required due to `verbatimModuleSyntax`).
+- **Use `import type`** for type-only imports (required by `verbatimModuleSyntax`).
   - ✅ `import type { ClassValue } from "clsx"`
-- **Don't use full qualifier names** — use direct imports.
+- **Direct imports only** — never use full qualifier names.
   - ✅ `import { Mesh } from "three"`
   - ❌ `import * as THREE from "three"`
 
@@ -69,16 +56,15 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 
 ### React & Three.js Patterns
 
-- **Use functional components** with arrow functions or `function` keyword.
-- **Never set state in `useFrame`** (R3F) — mutate refs directly for 60fps.
+- **Functional components** with arrow functions or `function` keyword.
+- **Never set state in `useFrame`** — mutate refs directly for 60fps performance.
 - **Use memoization** (`useMemo`, `useCallback`) for expensive operations.
-- **Prefer granular Zustand selectors**: `useAppStore(s => s.mode)` over `useAppStore()`.
-- **Reuse geometries/materials** via `useMemo`. Dispose on unmount.
+- **Granular Zustand selectors**: `useAppStore(s => s.mode)` over `useAppStore()`.
+- **Reuse geometries/materials** via `useMemo`. Always dispose on unmount.
 - **Use `<Instances>`** for repeated meshes (particles, stars).
-- **Disable post-processing** on mobile devices (`< 768px`).
-- **Always dispose** geometries and materials on unmount.
-- **Use `@react-spring/three`** for smooth 3D animations (scale, position, opacity).
-- **Lazy-load heavy components** (DetailPanel, PostProcessing) with `React.lazy()` + `Suspense`.
+- **Disable post-processing** on mobile (`< 768px`).
+- **Use `@react-spring/three`** for smooth 3D animations.
+- **Lazy-load heavy components** with `React.lazy()` + `Suspense`.
 
 ### State Management (Zustand)
 
@@ -116,11 +102,11 @@ src/
 ├── components/    # 2D DOM UI (detail/, leaderboard/, ui/)
 ├── hooks/         # Custom React hooks (useIsMobile.ts)
 ├── scene/         # R3F 3D components organized by mode (cosmos/, shared/)
-├── stores/        # Zustand slices (billionaire, scene)
+├── stores/        # Zustand slices (billionaire, scene, user)
 ├── utils/         # Pure functions (formatWealth.ts, wealthMath.ts, constants.ts)
 ├── types/         # Shared TypeScript types
-└── lib/           # Utilities (utils.ts, etc.)
-doc/               # Documentation (PRD, tech stack, phase docs)
+├── lib/           # Utilities (utils.ts for cn() helper)
+└── index.css      # Tailwind v4 CSS-first config with custom theme
 ```
 
 ### Dual-Layer Rendering
@@ -138,19 +124,26 @@ RTB-API (CDN) → TanStack Query (6h staleTime) → Zod validation → Zustand s
 
 API data is lazy-fetched on planet click via `enabled: !!uri` in `useQuery`.
 
+### Performance
+
+**Manual Code Splitting**: Vite config uses `manualChunks` for vendor splitting:
+
+- `react-vendor`, `three-vendor`, `r3f-vendor`, `postprocessing-vendor`, `animation-vendor`, `ui-vendor`
+
+**Mobile**: Post-processing disabled on mobile devices (`< 768px`).
+
 ## Dependencies
 
 - **React 19** + React DOM 19
 - **TypeScript 5.9** (strict mode)
-- **Vite 7** (build tool)
+- **Vite 7**
 - **Three.js 0.182** + React Three Fiber + Drei + Postprocessing
-- **Tailwind CSS 4** (styling)
-- **Zustand 5** (state management)
-- **TanStack Query 5** (data fetching)
-- **Zod 4** (validation)
-- **Motion 12** (animations)
-- **GSAP** (counter animations)
-- **shadcn/ui** (component library)
+- **Tailwind CSS 4** (CSS-first config)
+- **Zustand 5** with devtools middleware
+- **TanStack Query 5**
+- **Zod 4**
+- **Motion 12** + GSAP
+- **shadcn/ui** (New York style)
 
 ## Best Practices
 

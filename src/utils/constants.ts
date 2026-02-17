@@ -86,5 +86,37 @@ export const VIGNETTE_OFFSET = 0.3
 export const VIGNETTE_DARKNESS = 0.7
 export const CHROMATIC_OFFSET = 0.0005
 
+// Planet material
+export const PLANET_SEGMENTS = 32
+export const PLANET_EMISSIVE_INTENSITY = 0.15
+export const PLANET_ROUGHNESS = 0.3
+export const PLANET_METALNESS = 0.7
+
+// Planet Float animation
+export const PLANET_FLOAT_SPEED = 0.5
+export const PLANET_FLOAT_INTENSITY = 0.2
+export const PLANET_FLOAT_ROTATION_INTENSITY = 0.1
+
+// Planet label
+export const LABEL_Y_OFFSET = 0.8
+export const LABEL_NAME_FONT_SIZE = 0.5
+export const LABEL_WEALTH_FONT_SIZE = 0.3
+export const LABEL_OUTLINE_WIDTH = 0.02
+export const LABEL_WEALTH_Y_OFFSET = -0.15
+
+// Orbit frame-rate factor (delta * 60 normalizes to ~60fps)
+export const ORBIT_FRAME_RATE = 60
+
+// 2D Animation
+export const DETAIL_PANEL_SLIDE_X = 400
+export const SIDEBAR_SLIDE_X = -320
+export const UI_SPRING_STIFFNESS = 200
+export const UI_SPRING_DAMPING = 25
+
+// Canvas config
+export const CANVAS_NEAR = 0.1
+export const CANVAS_FAR = 1000
+export const DPR_RANGE: [number, number] = [1, 2]
+
 // Mobile
 export const MOBILE_BREAKPOINT_PX = 768

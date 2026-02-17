@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { X, ExternalLink, GraduationCap, Building2, MapPin } from 'lucide-react'
 import { useAppStore } from '@/stores'
@@ -7,6 +8,11 @@ import { getIndustryColor } from '@/utils/colorByIndustry'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  DETAIL_PANEL_SLIDE_X,
+  UI_SPRING_STIFFNESS,
+  UI_SPRING_DAMPING,
+} from '@/utils/constants'
 
 function countryCodeToEmoji(code: string): string {
   if (!code || code.length !== 2) return ''
@@ -17,12 +23,18 @@ function countryCodeToEmoji(code: string): string {
 }
 
 export function DetailPanel() {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const entry = useAppStore((s) =>
+    s.billionaires.find((b) => b.uri === s.selectedUri),
+  )
   const selectedUri = useAppStore((s) => s.selectedUri)
   const selectBillionaire = useAppStore((s) => s.selectBillionaire)
-  const billionaires = useAppStore((s) => s.billionaires)
 
-  const entry = billionaires.find((b) => b.uri === selectedUri)
   const { data: profile, isPending } = useBillionaireProfile(selectedUri)
+
+  useEffect(() => {
+    panelRef.current?.focus()
+  }, [])
 
   if (!entry) return null
 
@@ -30,15 +42,24 @@ export function DetailPanel() {
 
   return (
     <motion.div
-      className="glass-panel absolute top-20 right-4 bottom-4 z-20 flex w-96 flex-col overflow-hidden"
-      initial={{ x: 400, opacity: 0 }}
+      ref={panelRef}
+      role="dialog"
+      aria-label={`${entry.name} profile`}
+      tabIndex={-1}
+      className="glass-panel absolute top-20 right-4 bottom-4 z-20 flex w-full flex-col overflow-hidden outline-none sm:w-96"
+      initial={{ x: DETAIL_PANEL_SLIDE_X, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 400, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+      exit={{ x: DETAIL_PANEL_SLIDE_X, opacity: 0 }}
+      transition={{
+        type: 'spring',
+        stiffness: UI_SPRING_STIFFNESS,
+        damping: UI_SPRING_DAMPING,
+      }}
     >
       {/* Close button */}
       <button
         onClick={() => selectBillionaire(null)}
+        aria-label="Close detail panel"
         className="absolute top-3 right-3 z-10 rounded-full p-1.5 transition-colors hover:bg-ws-glass-hover"
       >
         <X className="h-4 w-4 text-ws-text-secondary" />

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Crown, TrendingUp, TrendingDown } from 'lucide-react'
 import type { BillionaireListEntry } from '@/types'
 import { getIndustryColor } from '@/utils/colorByIndustry'
@@ -10,7 +11,7 @@ interface LeaderboardRowProps {
   onSelect: (uri: string) => void
 }
 
-export function LeaderboardRow({
+export const LeaderboardRow = memo(function LeaderboardRow({
   entry,
   isSelected,
   onSelect,
@@ -20,6 +21,7 @@ export function LeaderboardRow({
   return (
     <button
       onClick={() => onSelect(entry.uri)}
+      aria-label={`Rank ${entry.rank}: ${entry.name}, ${formatWealth(entry.networth)}`}
       className={cn(
         'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200',
         'hover:bg-ws-glass-hover hover:-translate-y-0.5 hover:shadow-lg',
@@ -29,7 +31,7 @@ export function LeaderboardRow({
       {/* Rank */}
       <div className="flex w-6 shrink-0 items-center justify-center">
         {entry.rank === 1 ? (
-          <Crown className="h-4 w-4 text-ws-gold" />
+          <Crown className="h-4 w-4 text-ws-gold" aria-hidden="true" />
         ) : (
           <span className="font-mono text-xs text-ws-text-secondary">
             {entry.rank}
@@ -41,6 +43,7 @@ export function LeaderboardRow({
       <div
         className="h-2 w-2 shrink-0 rounded-full"
         style={{ backgroundColor: industryColor }}
+        aria-hidden="true"
       />
 
       {/* Name + net worth */}
@@ -60,6 +63,7 @@ export function LeaderboardRow({
             'flex shrink-0 items-center gap-0.5 text-xs',
             entry.change >= 0 ? 'text-ws-positive' : 'text-ws-negative',
           )}
+          aria-hidden="true"
         >
           {entry.change >= 0 ? (
             <TrendingUp className="h-3 w-3" />
@@ -70,4 +74,4 @@ export function LeaderboardRow({
       )}
     </button>
   )
-}
+})
