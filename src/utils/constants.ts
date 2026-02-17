@@ -206,3 +206,137 @@ export const COMPARISON_RESULTS_STAGGER_DELAY = 0.12
 export const TIME_TO_EARN_SLIDE_DELAY = 0.3
 export const WEALTH_RACE_SLIDE_DELAY = 0.5
 export const FUN_FACT_SLIDE_DELAY = 0.6
+
+// ===== Phase 4: Visualization Modes =====
+
+// Camera defaults per mode
+export const COSMOS_CAMERA_POSITION: [number, number, number] = [0, 15, 40]
+export const COSMOS_CAMERA_TARGET: [number, number, number] = [0, 0, 0]
+export const TOWERS_CAMERA_POSITION: [number, number, number] = [0, 8, 25]
+export const TOWERS_CAMERA_TARGET: [number, number, number] = [0, 8, 0]
+export const OCEAN_CAMERA_POSITION: [number, number, number] = [0, 0, 15]
+export const OCEAN_CAMERA_TARGET: [number, number, number] = [0, -5, 0]
+export const TIMELINE_CAMERA_POSITION: [number, number, number] = [0, 2, 0]
+export const TIMELINE_CAMERA_TARGET: [number, number, number] = [0, 2, 10]
+
+// Towers mode
+export const TOWER_SPACING = 4
+export const TOWER_WIDTH = 2
+export const TOWER_DEPTH = 2
+export const TOWER_TRANSMISSION = 0.3
+export const TOWER_ROUGHNESS = 0.1
+export const TOWER_METALNESS = 0.1
+export const TOWER_OPACITY = 0.9
+export const TOWER_EMISSIVE_BASE = 0.2
+export const TOWER_EMISSIVE_PULSE = 0.05
+export const TOWER_PULSE_SPEED = 1.5
+export const TOWER_MAX_PARTICLES = 30
+export const TOWER_PARTICLE_BASE_COUNT = 2
+export const TOWER_PARTICLE_SCALE_FACTOR = 500
+export const TOWER_PARTICLE_SIZE = 0.08
+export const TOWER_PARTICLE_FADE_ZONE = 0.8
+export const TOWER_POSITIVE_COLOR = '#00ff88'
+export const TOWER_NEGATIVE_COLOR = '#ff4466'
+export const TOWER_LABEL_OFFSET_X = 2.2
+export const TOWER_LABEL_HEIGHT_FACTOR = 0.75
+export const TOWER_FOG_COLOR = '#000000'
+export const TOWER_FOG_NEAR = 20
+export const TOWER_FOG_FAR = 80
+export const TOWER_AMBIENT_INTENSITY = 0.1
+export const TOWER_DIR_LIGHT_INTENSITY = 1.5
+export const TOWER_GROUND_COLOR = '#050505'
+export const TOWER_GROUND_SIZE = 200
+export const TOWER_GRID_CELL_SIZE = 4
+export const TOWER_GRID_SECTION_SIZE = 20
+export const TOWER_GRID_CELL_COLOR = '#1a1a3a'
+export const TOWER_GRID_SECTION_COLOR = '#2a2a5a'
+export const TOWER_GRID_FADE_DISTANCE = 60
+export const TOWER_ORBIT_TARGET: [number, number, number] = [0, 8, 0]
+export const TOWER_ORBIT_MIN_DISTANCE = 5
+export const TOWER_ORBIT_MAX_DISTANCE = 60
+
+// Ocean mode
+export const OCEAN_BG_COLOR = '#001122'
+export const OCEAN_FOG_COLOR = '#000811'
+export const OCEAN_FOG_NEAR = 5
+export const OCEAN_FOG_FAR = 40
+export const OCEAN_WATER_COLOR = '#0066aa'
+export const OCEAN_WATER_OPACITY = 0.35
+export const OCEAN_WATER_SIZE = 100
+export const OCEAN_WATER_SEGMENTS = 64
+export const OCEAN_WAVE_SPEED_1 = 0.8
+export const OCEAN_WAVE_SPEED_2 = 0.6
+export const OCEAN_WAVE_SPEED_3 = 1.2
+export const OCEAN_WAVE_AMP_1 = 0.15
+export const OCEAN_WAVE_AMP_2 = 0.1
+export const OCEAN_WAVE_AMP_3 = 0.08
+export const OCEAN_CREATURE_TENTACLE_COUNT = 8
+export const OCEAN_CREATURE_BOB_SPEED = 0.5
+export const OCEAN_CREATURE_BOB_AMP = 0.3
+export const OCEAN_CREATURE_TENTACLE_SWAY_X = 0.3
+export const OCEAN_CREATURE_TENTACLE_SWAY_Z = 0.2
+export const OCEAN_CREATURE_EMISSIVE_INTENSITY = 1.5
+export const OCEAN_CREATURE_TRANSMISSION = 0.6
+export const OCEAN_CREATURE_OPACITY = 0.7
+export const OCEAN_DEPTH_MARKERS = [
+  100_000, 200_000, 300_000, 400_000, 500_000, 600_000, 700_000,
+]
+export const OCEAN_DEPTH_MARKER_COLOR = '#4488cc'
+export const OCEAN_DEPTH_LINE_COLOR = '#224466'
+export const OCEAN_CAUSTIC_DIR_INTENSITY = 0.8
+export const OCEAN_CAUSTIC_DIR_COLOR = '#aaddff'
+export const OCEAN_CAUSTIC_SPOT1_INTENSITY = 2
+export const OCEAN_CAUSTIC_SPOT1_COLOR = '#88ccff'
+export const OCEAN_CAUSTIC_SPOT2_INTENSITY = 1.5
+export const OCEAN_CAUSTIC_SPOT2_COLOR = '#66aadd'
+export const OCEAN_AMBIENT_INTENSITY = 0.05
+export const OCEAN_AMBIENT_COLOR = '#223344'
+export const OCEAN_ORBIT_TARGET: [number, number, number] = [0, -5, 0]
+export const OCEAN_ORBIT_MIN_DISTANCE = 3
+export const OCEAN_ORBIT_MAX_DISTANCE = 40
+export const OCEAN_SPREAD_RADIUS_BASE = 6
+export const OCEAN_SPREAD_RADIUS_RAND = 4
+
+// Timeline mode
+export const TIMELINE_Z_SCALE = 2
+export const TIMELINE_SCROLL_SPEED = 0.3
+export const TIMELINE_TUNNEL_RADIUS = 8
+export const TIMELINE_TUNNEL_SEGMENTS = 128
+export const TIMELINE_TUNNEL_COLOR = '#0a0a2e'
+export const TIMELINE_TUNNEL_OPACITY = 0.15
+export const TIMELINE_BG_COLOR = '#050510'
+export const TIMELINE_FOG_NEAR = 5
+export const TIMELINE_FOG_FAR = 60
+export const TIMELINE_AMBIENT_INTENSITY = 0.3
+export const TIMELINE_SPOTLIGHT_INTENSITY = 1
+export const TIMELINE_BAND_HEIGHT = 0.4
+export const TIMELINE_BAND_GAP = 0.05
+export const TIMELINE_MAX_BAND_WIDTH = 3
+export const TIMELINE_MAX_NETWORTH_FOR_SCALE = 800_000
+export const TIMELINE_BAND_OPACITY = 0.7
+export const TIMELINE_DATE_MARKER_COLOR = '#334466'
+export const TIMELINE_DATE_LINE_COLOR = '#1a2a44'
+export const TIMELINE_DATE_LINE_OPACITY = 0.4
+export const TIMELINE_EVENT_VISIBILITY_RANGE = 15
+export const TIMELINE_CAMERA_LERP_FACTOR = 0.05
+export const TIMELINE_CAMERA_Y = 2
+export const TIMELINE_CAMERA_LOOK_AHEAD = 10
+export const TIMELINE_TUNNEL_PADDING = 5
+
+// Transition system
+export const TRANSITION_COLLAPSE_SPRING = {
+  mass: 1,
+  tension: 280,
+  friction: 24,
+}
+export const TRANSITION_EXPAND_SPRING = {
+  mass: 1.2,
+  tension: 170,
+  friction: 28,
+}
+
+// ModeTabs
+export const MODE_TAB_SPRING = { stiffness: 400, damping: 30 }
+
+// Cache
+export const CACHE_TTL_TOP10_MS = 1000 * 60 * 60 * 24 // 24 hours

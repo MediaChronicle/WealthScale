@@ -45,9 +45,26 @@ These layers share state through Zustand. The 3D scene reads from the store and 
 
 ### Four Visualization Modes
 
-The scene has four mutually exclusive modes (`cosmos | towers | ocean | timeline`), only one mounted at a time. Cosmos is bundled with main; others are `React.lazy` code-split chunks. Mode switching goes through `sceneStore.mode`.
+The scene has four mutually exclusive modes (`cosmos | towers | ocean | timeline`), only one mounted at a time. All modes are `React.lazy` code-split chunks. Mode switching uses a two-phase system via `sceneStore`:
 
-Each mode has an orchestrator component (e.g., `CosmosMode`) that owns its sub-components (sun, planets, orbit rings, camera controller, post-processing). `SceneManager` delegates to the active mode's orchestrator.
+1. `setMode(mode)` sets `pendingMode` + `isTransitioning=true` (guarded: no-op if already transitioning)
+2. `ModeTransition` (react-spring) collapses the old scene (scale 1→0 with spin)
+3. At collapse midpoint, `commitMode()` swaps `pendingMode → mode`, mounting the new mode
+4. `ModeTransition` expands the new scene (scale 0→1), then sets `isTransitioning=false`
+
+Each mode is a self-contained orchestrator that owns its background, fog, lighting, camera controls, and sub-components. `SceneManager` is a stateless router: it reads `mode` from Zustand, resolves the lazy component via `MODE_COMPONENTS` map, and wraps it in `<ModeTransition><Suspense>`.
+
+**No props flow through SceneManager.** Each mode reads `billionaires` (and any other data) directly from Zustand. The `toPlanetConfig()` transform lives inside `CosmosMode`, not in App.tsx. Timeline mode fetches its own historical data via `useBillionaireTop10History()` hook.
+
+Post-processing (`Bloom`, `Vignette`, `ChromaticAberration`) is shared across all modes — rendered in `App.tsx` inside `<Canvas>`, lazy-loaded, gated by `!isMobile`.
+
+**Mode components:**
+| Mode | Root | Camera | Key sub-components |
+|------|------|--------|--------------------|
+| Cosmos | `CosmosMode` | `CameraController` + `OrbitControls` | WealthSun, BillionairePlanet, OrbitRing, SpaceBackground, CosmosLighting |
+| Towers | `TowersMode` | `OrbitControls` (street-level, maxPolarAngle) | WealthTower (unit box + scale), TowerLabel, EnergyParticles, GroundPlane |
+| Ocean | `OceanMode` | `OrbitControls` | WealthCreature (unit hemisphere + scale), WaterSurface, DepthMarker, CausticLights |
+| Timeline | `TimelineMode` | Manual (wheel-scroll along Z, lerped in useFrame) | WealthBand (custom BufferGeometry), TimeTunnel, EventCard (drei Html), DateMarker |
 
 ### Data Flow
 
@@ -82,7 +99,7 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - `src/scene/` — all R3F 3D components, organized by mode (`cosmos/`, `towers/`, `ocean/`, `timeline/`, `shared/`)
 - `src/scene/cosmos/shaders/` — GLSL shader source strings (e.g., `sunShader.ts` for the WealthSun plasma effect)
 - `src/components/` — 2D DOM UI organized by feature (`detail/`, `leaderboard/`, `comparison/`, `layout/`, `modeSwitcher/`, `funFacts/`, `achievements/`, `ui/`)
-- `src/hooks/` — custom React hooks (`useIsMobile.ts`, `useSelectedBillionaire.ts`, `useFunFact.ts`, etc.)
+- `src/hooks/` — custom React hooks (`useIsMobile.ts`, `useSelectedBillionaire.ts`, `useFunFact.ts`, `useBillionaireTop10History.ts`, etc.)
 - `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `wealthComparison.ts`, `colorByIndustry.ts`, `constants.ts`
 - `src/types/index.ts` — all shared TypeScript types
 - `doc/` — PRD and phase-by-phase implementation plans (PHASE-1 through PHASE-5)
@@ -114,8 +131,9 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - Reuse geometries/materials via `useMemo`. **Dispose on unmount** with a `useEffect` cleanup (`geometry.dispose()`, `material.dispose()`). For size-varying meshes, create a **unit geometry once** (e.g., `SphereGeometry(1, …)`) as a module-level constant and control size via `mesh.scale` — never re-create geometry per radius change.
 - Use drei's `useCursor(hovered)` hook for cursor changes — never manipulate `document.body.style.cursor` directly.
 - Use `<Instances>` for repeated meshes (particles, stars).
-- Post-processing (`Bloom`, `Vignette`, `ChromaticAberration`) is lazy-loaded via `React.lazy` and disabled on mobile (checked via `useIsMobile` hook).
-- Scene colors, lighting values, and other 3D constants live in `src/utils/constants.ts` — never hardcode hex colors or magic numbers in scene components.
+- Post-processing (`Bloom`, `Vignette`, `ChromaticAberration`) is shared across all modes — rendered once in `App.tsx` inside `<Canvas>`, lazy-loaded via `React.lazy`, disabled on mobile (checked via `useIsMobile` hook). Individual modes do NOT render their own post-processing.
+- Scene colors, lighting values, and other 3D constants live in `src/utils/constants.ts` — never hardcode hex colors or magic numbers in scene components. Phase 4 constants are organized by mode under `// ===== Phase 4: Visualization Modes =====`.
+- **React 19 purity rule**: Never use `Math.random()` inside `useMemo` or during render. Use a seeded deterministic pseudo-random function instead (see `seededRandom()` in `EnergyParticles.tsx`).
 - Custom GLSL shaders are exported as template literal strings from `src/scene/<mode>/shaders/` and consumed by `ShaderMaterial`.
 - 3D components read selection state directly from Zustand (`useAppStore(s => s.selectedUri)`) — avoid prop-drilling callbacks like `onSelect`.
 - Planet positions are tracked via a shared `Map` ref (`planetPositions`) passed from the mode orchestrator, used by `CameraController` for fly-to targeting.
@@ -126,11 +144,12 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - Always use granular selectors: `useAppStore(s => s.mode)`, never `useAppStore()`.
 - `leaderboardOpen` / `setLeaderboardOpen` live in `sceneStore` (not local component state).
 - `userStore` holds `comparisonResults`, `wealthRace` (status/elapsed/accumulated), and actions `startRace` / `updateRace` / `finishRace` / `resetRace`. `toggleComparison` was replaced by `setShowComparison(bool)`.
+- **Two-phase mode switching** in `sceneStore`: `setMode(mode)` sets `pendingMode` + `isTransitioning=true` (guarded: no-op if already transitioning). `commitMode()` swaps `pendingMode → mode`. `ModeTabs` reads `pendingMode ?? mode` for immediate visual feedback on tab click.
 
 ### Animation
 
 - `useFrame` — per-frame 3D (rotation, orbit, position updates)
-- `@react-spring/three` — camera fly-to on planet selection (`CameraController`), hover/scale spring on planets (`animated.mesh`), label fade springs
+- `@react-spring/three` — camera fly-to on planet selection (`CameraController`), hover/scale spring on planets (`animated.mesh`), label fade springs, dimensional collapse/expand mode transitions (`ModeTransition`)
 - `motion/react` — 2D UI panel enter/exit animations. Use **individual** `<AnimatePresence>` per component (not a shared wrapper); the condition goes on the `<AnimatePresence>` child, not as an early return inside the component. Pattern: `<AnimatePresence>{condition && <Panel />}</AnimatePresence>`.
 - GSAP — counter animations, scroll-driven effects
 
@@ -139,7 +158,7 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - Base URL: `https://raw.githubusercontent.com/komed3/rtb-api/main/api`
 - Endpoints don't include file extensions (e.g., `/list/rtb/latest` not `.json`)
 - Net worth values from the API are in **millions USD** (e.g., `774601.062` = $774.6B).
-- TanStack Query with 6-hour staleTime (data updates monthly). Query keys: `["billionaires", "list"]`, `["billionaires", "profile", uri]`, etc. Cache TTLs are defined as constants (`CACHE_TTL_MS`, `CACHE_TTL_PROFILE_MS`) in `src/utils/constants.ts`.
+- TanStack Query with 6-hour staleTime (data updates monthly). Query keys: `["billionaires", "list"]`, `["billionaires", "profile", uri]`, `["billionaires", "top10"]` (timeline). Cache TTLs are defined as constants (`CACHE_TTL_MS`, `CACHE_TTL_PROFILE_MS`, `CACHE_TTL_TOP10_MS`) in `src/utils/constants.ts`.
 - **Zod schemas handle nullable/variable API fields**: `age`, `change`, `gender`, `flag`, and `citizenship` can have null or unexpected values — schemas normalize these with sensible defaults.
 - Scaling math (planet radius, orbit radius, tower height, ocean depth) lives in `src/utils/wealthMath.ts` — always call those functions rather than duplicating formulas.
 

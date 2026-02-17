@@ -1,10 +1,10 @@
-import { useMemo, useEffect, useCallback, lazy, Suspense } from 'react'
+import { useEffect, useCallback, lazy, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { AnimatePresence } from 'motion/react'
 import { SceneManager } from '@/scene/SceneManager'
 import { useBillionaireList } from '@/api/queries'
-import { toPlanetConfig } from '@/api/transformers'
 import { useAppStore } from '@/stores'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import {
   DEFAULT_CAMERA_POSITION,
   DEFAULT_CAMERA_FOV,
@@ -13,6 +13,7 @@ import {
   DPR_RANGE,
 } from '@/utils/constants'
 import { LeaderboardSidebar } from '@/components/leaderboard/LeaderboardSidebar'
+import { ModeTabs } from '@/components/modeSwitcher/ModeTabs'
 import { ComparisonBar } from '@/components/comparison/ComparisonBar'
 import { ComparisonResults } from '@/components/comparison/ComparisonResults'
 import { TimeToEarn } from '@/components/comparison/TimeToEarn'
@@ -23,6 +24,12 @@ import { ZodError } from 'zod'
 const DetailPanel = lazy(() =>
   import('@/components/detail/DetailPanel').then((m) => ({
     default: m.DetailPanel,
+  })),
+)
+
+const PostProcessing = lazy(() =>
+  import('@/scene/shared/PostProcessing').then((m) => ({
+    default: m.PostProcessing,
   })),
 )
 
@@ -64,6 +71,7 @@ export default function App() {
   const netWorth = useAppStore((s) => s.netWorth)
   const leaderboardOpen = useAppStore((s) => s.leaderboardOpen)
   const setLeaderboardOpen = useAppStore((s) => s.setLeaderboardOpen)
+  const isMobile = useIsMobile()
 
   const handleToggle = useCallback(
     () => setLeaderboardOpen(!leaderboardOpen),
@@ -75,11 +83,6 @@ export default function App() {
       setBillionaires(billionaires)
     }
   }, [billionaires, setBillionaires])
-
-  const planets = useMemo(
-    () => (billionaires ?? []).map(toPlanetConfig),
-    [billionaires],
-  )
 
   if (isPending) {
     return (
@@ -125,7 +128,12 @@ export default function App() {
 
       {/* 3D Canvas */}
       <Canvas camera={CAMERA_CONFIG} dpr={DPR_RANGE} gl={GL_CONFIG}>
-        <SceneManager planets={planets} />
+        <SceneManager />
+        {!isMobile && (
+          <Suspense fallback={null}>
+            <PostProcessing />
+          </Suspense>
+        )}
       </Canvas>
 
       {/* 2D HUD Overlay */}
@@ -139,6 +147,9 @@ export default function App() {
           </div>
         </header>
 
+        {/* Mode Switcher */}
+        <ModeTabs />
+
         {/* Leaderboard Sidebar */}
         <nav
           id="leaderboard"
@@ -151,7 +162,7 @@ export default function App() {
           />
         </nav>
 
-        {/* Detail Panel — hidden when comparison is active (D5) */}
+        {/* Detail Panel — hidden when comparison is active */}
         <div className="pointer-events-auto" aria-live="polite">
           <Suspense fallback={null}>
             <AnimatePresence>

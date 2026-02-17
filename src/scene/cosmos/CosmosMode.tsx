@@ -1,34 +1,33 @@
-import { useRef, lazy, Suspense } from 'react'
+import { useRef, useMemo } from 'react'
 import { OrbitControls } from '@react-three/drei'
-import type { PlanetConfig } from '@/types'
 import { useAppStore } from '@/stores'
-import { useIsMobile } from '@/hooks/useIsMobile'
+import { toPlanetConfig } from '@/api/transformers'
+import { SpaceBackground } from '@/scene/shared/Background'
+import { CosmosLighting } from '@/scene/shared/Lighting'
 import { WealthSun } from './WealthSun'
 import { OrbitRing } from './OrbitRing'
 import { BillionairePlanet } from './BillionairePlanet'
 import { CameraController } from '@/scene/shared/CameraController'
 import { UserParticle } from '@/scene/shared/UserParticle'
 
-const PostProcessing = lazy(() =>
-  import('@/scene/shared/PostProcessing').then((m) => ({
-    default: m.PostProcessing,
-  })),
-)
-
 type OrbitControlsRef = React.ComponentRef<typeof OrbitControls>
 
-interface CosmosModeProps {
-  planets: PlanetConfig[]
-}
-
-export function CosmosMode({ planets }: CosmosModeProps) {
+export function CosmosMode() {
   const controlsRef = useRef<OrbitControlsRef>(null)
   const planetPositionsRef = useRef(new Map<string, [number, number, number]>())
+  const billionaires = useAppStore((s) => s.billionaires)
   const showOrbits = useAppStore((s) => s.showOrbits)
-  const isMobile = useIsMobile()
+
+  const planets = useMemo(
+    () => billionaires.map(toPlanetConfig),
+    [billionaires],
+  )
 
   return (
     <>
+      <SpaceBackground />
+      <CosmosLighting />
+
       <WealthSun />
 
       {showOrbits &&
@@ -54,12 +53,6 @@ export function CosmosMode({ planets }: CosmosModeProps) {
         controlsRef={controlsRef}
         planetPositions={planetPositionsRef}
       />
-
-      {!isMobile && (
-        <Suspense fallback={null}>
-          <PostProcessing />
-        </Suspense>
-      )}
 
       <OrbitControls
         ref={controlsRef}

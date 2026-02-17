@@ -64,19 +64,101 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 - **Use `<Instances>`** for repeated meshes (particles, stars).
 - **Disable post-processing** on mobile (`< 768px`).
 - **Use `@react-spring/three`** for smooth 3D animations.
-- **Lazy-load heavy components** with `React.lazy()` + `Suspense`.
+- **Lazy-load mode components** with `React.lazy()` + `Suspense`. SceneManager routes between modes dynamically.
 - **3D Geometry scaling**: Create **unit geometry once** (e.g., `SphereGeometry(1, …)`) as a module-level constant and control size via `mesh.scale` — never re-create geometry per radius change.
+
+#### Mode Transition System
+
+The `ModeTransition` component wraps the active mode and performs a "dimensional collapse" animation when switching modes:
+
+1. **Collapse** (0-0.8s): Current scene shrinks to zero with 360° rotation
+2. **Expand** (0.8-2.0s): New scene expands from zero with another 360° rotation
+
+```typescript
+// SceneManager lazy-loads modes for code splitting
+const TowersMode = lazy(() => import('@/scene/towers/TowersMode'))
+const OceanMode = lazy(() => import('@/scene/ocean/OceanMode'))
+const TimelineMode = lazy(() => import('@/scene/timeline/TimelineMode'))
+
+export function SceneManager() {
+  const mode = useAppStore((s) => s.mode)
+  const ActiveMode = MODE_COMPONENTS[mode]
+
+  return (
+    <ModeTransition>
+      <Suspense fallback={<SceneLoadingFallback />}>
+        <ActiveMode />
+      </Suspense>
+    </ModeTransition>
+  )
+}
+```
+
+### Types
+
+```typescript
+// Visualization modes
+export type VisualizationMode = 'cosmos' | 'towers' | 'ocean' | 'timeline'
+
+// Timeline data structures
+export interface BandDataPoint {
+  month: number
+  networth: number
+}
+
+export interface TimelineBillionaire {
+  uri: string
+  name: string
+  color: string
+  dataPoints: BandDataPoint[]
+}
+
+export interface TimelineData {
+  months: string[]
+  billionaires: TimelineBillionaire[]
+}
+```
 
 ### Custom Hooks
 
 - **`useSelectedBillionaire()`** — Returns the currently selected billionaire using granular selectors + `useMemo`. Replaces inline `.find()` calls in components. Never subscribe to `billionaires` array just to call `.find()` inline.
 - **`useFunFact(networth)`** — Returns `{ fact, total, index, next, previous, goToIndex }`. Manual navigation (`next`, `previous`, `goToIndex`) resets the auto-rotation timer.
+- **`useBillionaireTop10History()`** — Fetches historical top 10 data from `/stats/top10` endpoint. Returns `{ data: TimelineData, isPending }` with 24h staleTime. Used by TimelineMode for wealth bands visualization.
 
 ### State Management (Zustand)
 
 - **Use slice pattern** — each domain has a `StateCreator`, combined in `src/stores/index.ts`.
 - **Include `devtools` middleware** in store configuration.
 - **Use granular selectors** for reading state.
+
+#### Scene Slice (Mode Management)
+
+The scene store manages visualization mode state with a transition system:
+
+```typescript
+// src/stores/sceneStore.ts
+export interface SceneSlice {
+  mode: VisualizationMode // Current active mode: 'cosmos' | 'towers' | 'ocean' | 'timeline'
+  pendingMode: VisualizationMode | null // Mode waiting for transition completion
+  cameraTarget: Vec3
+  isTransitioning: boolean // True during dimensional collapse transition
+  showLabels: boolean
+  showOrbits: boolean
+  leaderboardOpen: boolean
+
+  setMode: (mode: VisualizationMode) => void // Initiates mode switch (sets pendingMode)
+  commitMode: () => void // Called by ModeTransition to finalize switch
+  setTransitioning: (value: boolean) => void
+  // ... other actions
+}
+```
+
+**Mode Switching Flow:**
+
+1. `setMode(newMode)` sets `pendingMode` and `isTransitioning = true`
+2. `ModeTransition` component animates collapse → expand
+3. On expand complete, `commitMode()` copies `pendingMode` to `mode` and clears it
+4. New mode component mounts with lazy loading
 
 #### User Slice (Comparison State)
 
@@ -145,11 +227,21 @@ src/
 │   ├── detail/       # Billionaire detail panel
 │   ├── funFacts/     # Fun fact cards and overlays
 │   ├── leaderboard/  # Leaderboard sidebar
+│   ├── modeSwitcher/ # Mode tabs UI (ModeTabs.tsx)
 │   └── ui/           # shadcn/ui primitives
-├── hooks/            # Custom React hooks (useIsMobile.ts, useSelectedBillionaire.ts, useFunFact.ts, etc.)
+├── hooks/            # Custom React hooks
+│   ├── useIsMobile.ts
+│   ├── useSelectedBillionaire.ts
+│   ├── useFunFact.ts
+│   └── useBillionaireTop10History.ts  # Timeline historical data
 ├── scene/            # R3F 3D components organized by mode
 │   ├── cosmos/       # Solar system mode
-│   └── shared/       # Shared 3D components (UserParticle.tsx)
+│   ├── towers/       # Futuristic cityscape skyscrapers
+│   ├── ocean/        # Underwater depth visualization
+│   ├── timeline/     # Time-travel corridor
+│   └── shared/       # Shared 3D components
+│       ├── UserParticle.tsx
+│       └── ModeTransition.tsx
 ├── stores/           # Zustand slices (billionaire, scene, user)
 ├── utils/            # Pure functions (formatWealth.ts, wealthMath.ts, wealthComparison.ts, constants.ts)
 ├── types/            # Shared TypeScript types

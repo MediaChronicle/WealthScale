@@ -87,3 +87,22 @@ export interface PlanetConfig {
   rank: number
   networth: number
 }
+
+// ===== Timeline Types =====
+
+export interface BandDataPoint {
+  month: number
+  networth: number
+}
+
+export interface TimelineBillionaire {
+  uri: string
+  name: string
+  color: string
+  dataPoints: BandDataPoint[]
+}
+
+export interface TimelineData {
+  months: string[]
+  billionaires: TimelineBillionaire[]
+}

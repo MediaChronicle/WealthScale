@@ -97,6 +97,23 @@ export const BillionaireListResponseSchema = z.object({
   list: BillionaireListSchema,
 })
 
+// ===== Top 10 Historical Schema =====
+
+const Top10EntrySchema = z.object({
+  rank: z.number(),
+  uri: z.string(),
+  name: z.string(),
+  networth: z.number(),
+  industry: z.array(z.string()).optional().default([]),
+})
+
+export const Top10SnapshotSchema = z.record(
+  z.string(),
+  z.array(Top10EntrySchema),
+)
+
+// ===== Profile Schema =====
+
 export const BillionaireProfileSchema = z.object({
   uri: z.string(),
   name: z.string(),
