@@ -6,6 +6,7 @@ import { SphereGeometry, MeshPhysicalMaterial, Color } from 'three'
 import type { Group } from 'three'
 import type { PlanetConfig } from '@/types'
 import { useAppStore } from '@/stores'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { formatWealth } from '@/utils/formatWealth'
 import {
   TEXT_COLOR,
@@ -58,6 +59,7 @@ export function BillionairePlanet({
   const selectedUri = useAppStore((s) => s.selectedUri)
   const selectBillionaire = useAppStore((s) => s.selectBillionaire)
   const isSelected = selectedUri === config.uri
+  const reducedMotion = useReducedMotion()
 
   const initialAngle = useMemo(
     () => hashStringToAngle(config.uri),
@@ -106,8 +108,22 @@ export function BillionairePlanet({
     setHovered(false)
   }, [])
 
+  // Set static position for reduced motion
+  useEffect(() => {
+    if (reducedMotion && groupRef.current) {
+      const angle = hashStringToAngle(config.uri)
+      const x = Math.cos(angle) * config.orbitRadius
+      const z = Math.sin(angle) * config.orbitRadius
+      groupRef.current.position.x = x
+      groupRef.current.position.z = z
+      if (planetPositions?.current) {
+        planetPositions.current.set(config.uri, [x, 0, z])
+      }
+    }
+  }, [reducedMotion, config.uri, config.orbitRadius, planetPositions])
+
   useFrame((_, delta) => {
-    if (!groupRef.current) return
+    if (!groupRef.current || reducedMotion) return
 
     orbitAngleRef.current += config.orbitSpeed * delta * ORBIT_FRAME_RATE
     const angle = orbitAngleRef.current
@@ -124,12 +140,14 @@ export function BillionairePlanet({
     }
   })
 
+  const a11yDescription = `${config.name}, net worth ${formatWealth(config.networth)}, rank ${config.rank}`
+
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} aria-label={a11yDescription}>
       <Float
-        speed={PLANET_FLOAT_SPEED}
-        floatIntensity={PLANET_FLOAT_INTENSITY}
-        rotationIntensity={PLANET_FLOAT_ROTATION_INTENSITY}
+        speed={reducedMotion ? 0 : PLANET_FLOAT_SPEED}
+        floatIntensity={reducedMotion ? 0 : PLANET_FLOAT_INTENSITY}
+        rotationIntensity={reducedMotion ? 0 : PLANET_FLOAT_ROTATION_INTENSITY}
       >
         <animated.mesh
           geometry={UNIT_SPHERE}

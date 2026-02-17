@@ -4,13 +4,14 @@ Guidance for AI agents operating in the WealthScale codebase.
 
 ## Project Overview
 
-WealthScale is a 3D interactive wealth visualization app rendering billionaire fortunes as explorable 3D worlds (solar system, city skyline, ocean depths, time tunnel). Pure client-side SPA built with React 19, TypeScript 5.9, Vite 7, Three.js, React Three Fiber, and Zustand.
+WealthScale is a 3D interactive wealth visualization app rendering billionaire fortunes as explorable 3D worlds (solar system, city skyline, ocean depths, time tunnel). Features gamification (achievements, mini-games), easter eggs, and social sharing. Pure client-side SPA built with React 19, TypeScript 5.9, Vite 7, Three.js, React Three Fiber, and Zustand.
 
 ## Build & Development Commands
 
 ```bash
 pnpm dev              # Start dev server (Vite 7, port 5173)
 pnpm build            # Type-check (tsc -b) then build for production
+pnpm build:analyze    # Build and visualize bundle size
 pnpm lint             # ESLint on all .ts/.tsx files
 pnpm preview          # Preview production build locally
 pnpm vitest run       # Run tests once
@@ -103,10 +104,10 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 ```
 src/
 ├── api/              # Fetch client, endpoints, Zod schemas, TanStack Query hooks
-├── components/       # 2D DOM UI (comparison/, detail/, funFacts/, leaderboard/, modeSwitcher/, ui/)
+├── components/       # 2D DOM UI (achievements/, comparison/, detail/, funFacts/, leaderboard/, layout/, modeSwitcher/, ui/)
 ├── hooks/            # Custom React hooks (useSelectedBillionaire, useFunFact, useReducedMotion, etc.)
 ├── scene/            # R3F 3D components organized by mode (cosmos/, towers/, ocean/, timeline/, shared/)
-├── stores/           # Zustand slices (billionaire, scene, user)
+├── stores/           # Zustand slices (billionaire, scene, user, achievement)
 ├── utils/            # Pure functions (formatWealth.ts, wealthMath.ts, constants.ts)
 ├── types/            # Shared TypeScript types
 ├── lib/              # Utilities (utils.ts for cn() helper)
@@ -144,3 +145,15 @@ From `src/utils/constants.ts`:
 - `WS_ACCENT_COLOR` — canonical accent color (replaces `#00d4ff` hardcodes)
 - `TOWER_GLASS_THICKNESS`, `TIMELINE_SPOTLIGHT_*`, `OCEAN_CAUSTIC_*` — 3D scene parameters
 - `CACHE_TTL_TOP10_MS` — 24 hour cache for historical data
+
+### Phase 5: Polish & Gamification Constants
+
+- `ACHIEVEMENT_TOAST_DURATION_MS` / `ACHIEVEMENT_TOAST_SPRING` / `ACHIEVEMENT_CONFETTI_COUNT` — achievement toast system
+- `GUESS_MIN_MILLIONS` / `GUESS_MAX_MILLIONS` / `GUESS_STEP_MILLIONS` / `GUESS_DEFAULT_MILLIONS` / `GUESS_ROUND_COUNT` — Guess the Wealth mini-game
+- `ENTRY_STARS_DELAY_MS` / `ENTRY_PLANET_START_MS` / `ENTRY_PLANET_STAGGER_MS` / `ENTRY_COMPLETE_BUFFER_MS` — entry animation timings
+- `LOADING_COIN_*` — Loading screen 3D coin (spin speed, float, color, emissive, radius, height, segments, metalness, roughness)
+- `KONAMI_RAIN_*` — Konami code easter egg (duration, particle count, sizes, speed, spread, height range, colors)
+- `SUPERNOVA_*` — Sun supernova easter egg (click threshold, reset timeout, explosion/reform durations/scales, sparkle settings)
+- `MOBILE_*` / `DESKTOP_*` — Performance settings (particle count, star count, sphere segments, DPR range)
+- `SCREENSHOT_BRAND_*` — Screenshot branding (padding, height, bg color, text color, accent color)
+- `LS_KEY_ACHIEVEMENTS` — localStorage key for achievement persistence

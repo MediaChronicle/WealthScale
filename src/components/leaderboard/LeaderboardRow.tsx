@@ -22,9 +22,11 @@ export const LeaderboardRow = memo(function LeaderboardRow({
     <button
       onClick={() => onSelect(entry.uri)}
       aria-label={`Rank ${entry.rank}: ${entry.name}, ${formatWealth(entry.networth)}`}
+      aria-selected={isSelected}
       className={cn(
         'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200',
         'hover:bg-ws-glass-hover hover:-translate-y-0.5 hover:shadow-lg',
+        'outline-none focus-visible:ring-2 focus-visible:ring-ws-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ws-bg',
         isSelected && 'bg-ws-glass-hover ring-1 ring-ws-accent/30',
       )}
     >

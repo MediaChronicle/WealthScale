@@ -20,7 +20,11 @@ const TABS: ModeTab[] = [
   { mode: 'timeline', icon: Clock, label: 'Timeline' },
 ]
 
-export function ModeTabs() {
+interface ModeTabsProps {
+  embedded?: boolean
+}
+
+export function ModeTabs({ embedded = false }: ModeTabsProps) {
   const mode = useAppStore((s) => s.mode)
   const pendingMode = useAppStore((s) => s.pendingMode)
   const setMode = useAppStore((s) => s.setMode)
@@ -63,7 +67,12 @@ export function ModeTabs() {
   }, [updateUnderline])
 
   return (
-    <div className="pointer-events-auto fixed left-1/2 top-6 z-50 -translate-x-1/2">
+    <div
+      className={cn(
+        !embedded &&
+          'pointer-events-auto fixed left-1/2 top-6 z-50 -translate-x-1/2',
+      )}
+    >
       <div
         ref={containerRef}
         role="tablist"

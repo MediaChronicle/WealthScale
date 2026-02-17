@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "prepare": "husky",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
+    "build:analyze": "vite build && npx vite-bundle-visualizer"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -103,7 +103,7 @@ export function ComparisonResults() {
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       {comparisonResults && (
-        <>
+        <div aria-live="polite" role="status">
           <h3 className="text-center font-display text-sm font-semibold text-ws-text-primary">
             Your Wealth vs Theirs
           </h3>
@@ -141,7 +141,7 @@ export function ComparisonResults() {
               index={3}
             />
           </div>
-        </>
+        </div>
       )}
     </motion.div>
   )

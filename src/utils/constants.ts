@@ -385,3 +385,80 @@ export const OCEAN_CREATURE_RADIUS_DIVISOR = 50_000
 
 // Cache
 export const CACHE_TTL_TOP10_MS = 1000 * 60 * 60 * 24 // 24 hours
+
+// ===== Phase 5: Polish & Gamification =====
+
+// Achievement toast
+export const ACHIEVEMENT_TOAST_DURATION_MS = 4_000
+export const ACHIEVEMENT_TOAST_SPRING = { stiffness: 300, damping: 25 }
+export const ACHIEVEMENT_CONFETTI_COUNT = 16
+
+// Guess the Wealth mini-game
+export const GUESS_MIN_MILLIONS = 10_000 // $10B
+export const GUESS_MAX_MILLIONS = 800_000 // $800B
+export const GUESS_STEP_MILLIONS = 1_000 // $1B
+export const GUESS_DEFAULT_MILLIONS = 100_000 // $100B
+export const GUESS_ROUND_COUNT = 10
+
+// Entry animation
+export const ENTRY_STARS_DELAY_MS = 300
+export const ENTRY_PLANET_START_MS = 800
+export const ENTRY_PLANET_STAGGER_MS = 300
+export const ENTRY_COMPLETE_BUFFER_MS = 500
+
+// Loading coin
+export const LOADING_COIN_SPIN_SPEED = 1.5
+export const LOADING_COIN_FLOAT_SPEED = 2
+export const LOADING_COIN_FLOAT_AMP = 0.3
+export const LOADING_COIN_COLOR = '#FFD700'
+export const LOADING_COIN_EMISSIVE = '#CC9900'
+export const LOADING_COIN_RADIUS = 1
+export const LOADING_COIN_HEIGHT = 0.12
+export const LOADING_COIN_SEGMENTS = 48
+export const LOADING_COIN_METALNESS = 0.9
+export const LOADING_COIN_ROUGHNESS = 0.2
+
+// Konami code rain
+export const KONAMI_RAIN_DURATION_MS = 8_000
+export const KONAMI_RAIN_PARTICLE_COUNT = 200
+export const KONAMI_RAIN_PARTICLE_WIDTH = 0.3
+export const KONAMI_RAIN_PARTICLE_HEIGHT = 0.15
+export const KONAMI_RAIN_FALL_SPEED = 4
+export const KONAMI_RAIN_SPREAD = 20
+export const KONAMI_RAIN_HEIGHT_RANGE = 15
+export const KONAMI_RAIN_GREEN = '#00ff88'
+export const KONAMI_RAIN_GOLD = '#FFD700'
+
+// Sun supernova easter egg
+export const SUPERNOVA_CLICK_THRESHOLD = 5
+export const SUPERNOVA_RESET_TIMEOUT_MS = 3_000
+export const SUPERNOVA_EXPLOSION_DURATION_MS = 2_000
+export const SUPERNOVA_REFORM_DURATION_MS = 1_500
+export const SUPERNOVA_EXPLOSION_SCALE = 8
+export const SUPERNOVA_REFORM_SCALE = 0.1
+export const SUPERNOVA_EMISSIVE_INTENSITY = 10
+export const SUPERNOVA_SPARKLE_COUNT = 200
+export const SUPERNOVA_SPARKLE_SIZE = 10
+export const SUPERNOVA_SPARKLE_SPEED = 5
+export const SUPERNOVA_SPARKLE_SCALE = 30
+export const SUPERNOVA_SPARKLE_COLOR = '#FFD700'
+
+// Mobile performance
+export const MOBILE_PARTICLE_COUNT = 250
+export const DESKTOP_PARTICLE_COUNT = 500
+export const MOBILE_STAR_COUNT = 2500
+export const DESKTOP_STAR_COUNT = 5000
+export const MOBILE_SPHERE_SEGMENTS = 16
+export const DESKTOP_SPHERE_SEGMENTS = 32
+export const MOBILE_DPR_RANGE: [number, number] = [1, 1.5]
+export const DESKTOP_DPR_RANGE: [number, number] = [1, 2]
+
+// Screenshot branding
+export const SCREENSHOT_BRAND_PADDING = 12
+export const SCREENSHOT_BRAND_HEIGHT = 40
+export const SCREENSHOT_BRAND_BG = '#0a0a1a'
+export const SCREENSHOT_BRAND_TEXT = '#e2e8f0'
+export const SCREENSHOT_BRAND_ACCENT = '#00d4ff'
+
+// localStorage keys
+export const LS_KEY_ACHIEVEMENTS = 'wealthscale-achievements'

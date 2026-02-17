@@ -1,16 +1,22 @@
-import { useEffect, useCallback, lazy, Suspense } from 'react'
+import { useEffect, useCallback, lazy, Suspense, useState, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { AnimatePresence } from 'motion/react'
+import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei'
+import { AnimatePresence, MotionConfig } from 'motion/react'
 import { SceneManager } from '@/scene/SceneManager'
 import { useBillionaireList } from '@/api/queries'
 import { useAppStore } from '@/stores'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { useAchievements } from '@/hooks/useAchievements'
+import { useKonamiCode } from '@/hooks/useKonamiCode'
+import { useMobilePerformance } from '@/hooks/useMobilePerformance'
+import { useScreenshot } from '@/hooks/useScreenshot'
 import {
   DEFAULT_CAMERA_POSITION,
   DEFAULT_CAMERA_FOV,
   CANVAS_NEAR,
   CANVAS_FAR,
-  DPR_RANGE,
+  KONAMI_RAIN_DURATION_MS,
 } from '@/utils/constants'
 import { LeaderboardSidebar } from '@/components/leaderboard/LeaderboardSidebar'
 import { ModeTabs } from '@/components/modeSwitcher/ModeTabs'
@@ -19,6 +25,11 @@ import { ComparisonResults } from '@/components/comparison/ComparisonResults'
 import { TimeToEarn } from '@/components/comparison/TimeToEarn'
 import { WealthRace } from '@/components/comparison/WealthRace'
 import { FunFactCard } from '@/components/funFacts/FunFactCard'
+import { Header } from '@/components/layout/Header'
+import { LoadingScreen } from '@/components/layout/LoadingScreen'
+import { AchievementToast } from '@/components/achievements/AchievementToast'
+import { MoneyRain } from '@/scene/shared/MoneyRain'
+import { MobileSheet } from '@/components/layout/MobileSheet'
 import { ZodError } from 'zod'
 
 const DetailPanel = lazy(() =>
@@ -33,6 +44,12 @@ const PostProcessing = lazy(() =>
   })),
 )
 
+const GuessTheWealth = lazy(() =>
+  import('@/components/comparison/GuessTheWealth').then((m) => ({
+    default: m.GuessTheWealth,
+  })),
+)
+
 const CAMERA_CONFIG = {
   position: DEFAULT_CAMERA_POSITION,
   fov: DEFAULT_CAMERA_FOV,
@@ -44,6 +61,7 @@ const GL_CONFIG = {
   antialias: true,
   alpha: false,
   powerPreference: 'high-performance' as const,
+  preserveDrawingBuffer: true,
 }
 
 function getErrorMessage(error: Error): string {
@@ -54,6 +72,28 @@ function getErrorMessage(error: Error): string {
     return 'Unable to connect to the wealth data API. Please check your connection.'
   }
   return error.message || 'An unexpected error occurred.'
+}
+
+// Bridge component to expose screenshot functions from inside Canvas
+function ScreenshotBridge({
+  onRegister,
+}: {
+  onRegister: (fns: {
+    download: () => Promise<void>
+    copy: () => Promise<void>
+  }) => void
+}) {
+  const { download, copyToClipboard } = useScreenshot()
+  const registeredRef = useRef(false)
+
+  useEffect(() => {
+    if (!registeredRef.current) {
+      onRegister({ download, copy: copyToClipboard })
+      registeredRef.current = true
+    }
+  }, [download, copyToClipboard, onRegister])
+
+  return null
 }
 
 export default function App() {
@@ -72,11 +112,49 @@ export default function App() {
   const leaderboardOpen = useAppStore((s) => s.leaderboardOpen)
   const setLeaderboardOpen = useAppStore((s) => s.setLeaderboardOpen)
   const isMobile = useIsMobile()
+  const prefersReduced = useReducedMotion()
+  const perfConfig = useMobilePerformance()
+
+  // Phase 5 state
+  const [moneyRainActive, setMoneyRainActive] = useState(false)
+  const [gameOpen, setGameOpen] = useState(false)
+  const [screenshotFns, setScreenshotFns] = useState<{
+    download: () => Promise<void>
+    copy: () => Promise<void>
+  } | null>(null)
+  const [dpr, setDpr] = useState(perfConfig.dprRange[1])
+  const [mobileLeaderboard, setMobileLeaderboard] = useState(false)
+  const [mobileDetail, setMobileDetail] = useState(false)
+
+  // Achievement tracking
+  useAchievements()
+
+  // Konami code
+  const handleKonami = useCallback(() => {
+    setMoneyRainActive(true)
+    setTimeout(() => setMoneyRainActive(false), KONAMI_RAIN_DURATION_MS)
+  }, [])
+  useKonamiCode(handleKonami)
 
   const handleToggle = useCallback(
     () => setLeaderboardOpen(!useAppStore.getState().leaderboardOpen),
     [setLeaderboardOpen],
   )
+
+  const handleScreenshotRegister = useCallback(
+    (fns: { download: () => Promise<void>; copy: () => Promise<void> }) => {
+      setScreenshotFns(fns)
+    },
+    [],
+  )
+
+  const handleScreenshotDownload = useCallback(() => {
+    screenshotFns?.download()
+  }, [screenshotFns])
+
+  const handleScreenshotCopy = useCallback(() => {
+    screenshotFns?.copy()
+  }, [screenshotFns])
 
   useEffect(() => {
     if (billionaires) {
@@ -84,18 +162,17 @@ export default function App() {
     }
   }, [billionaires, setBillionaires])
 
-  if (isPending) {
-    return (
-      <div
-        role="status"
-        className="flex h-screen w-screen items-center justify-center bg-ws-bg"
-      >
-        <p className="animate-pulse font-display text-xl text-ws-accent">
-          Loading WealthScale...
-        </p>
-      </div>
-    )
-  }
+  const isReady = !isPending && !isError
+
+  // Open mobile detail sheet when a billionaire is selected
+  useEffect(() => {
+    if (!isMobile) return
+    return useAppStore.subscribe((state, prev) => {
+      if (state.selectedUri && state.selectedUri !== prev.selectedUri) {
+        setMobileDetail(true)
+      }
+    })
+  }, [isMobile])
 
   if (isError) {
     return (
@@ -117,78 +194,156 @@ export default function App() {
   }
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
-      {/* Skip link for keyboard users */}
-      <a
-        href="#leaderboard"
-        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:z-50 focus-visible:rounded-lg focus-visible:bg-ws-accent focus-visible:px-4 focus-visible:py-2 focus-visible:text-ws-bg"
-      >
-        Skip to leaderboard
-      </a>
+    <MotionConfig reducedMotion={prefersReduced ? 'always' : 'never'}>
+      <div className="relative h-screen w-screen overflow-hidden">
+        {/* Loading screen */}
+        <LoadingScreen ready={isReady} />
 
-      {/* 3D Canvas */}
-      <Canvas camera={CAMERA_CONFIG} dpr={DPR_RANGE} gl={GL_CONFIG}>
-        <SceneManager />
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <PostProcessing />
-          </Suspense>
-        )}
-      </Canvas>
-
-      {/* 2D HUD Overlay */}
-      <div className="pointer-events-none absolute inset-0 z-10">
-        {/* Header */}
-        <header className="pointer-events-auto flex justify-center pt-4">
-          <div className="glass-panel px-6 py-2.5">
-            <h1 className="font-display text-lg font-bold tracking-wide text-ws-text-primary">
-              Wealth<span className="text-ws-accent">Scale</span>
-            </h1>
-          </div>
-        </header>
-
-        {/* Mode Switcher */}
-        <ModeTabs />
-
-        {/* Leaderboard Sidebar */}
-        <nav
-          id="leaderboard"
-          aria-label="Wealth rankings"
-          className="pointer-events-auto"
+        {/* Skip link for keyboard users */}
+        <a
+          href="#leaderboard"
+          className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:z-50 focus-visible:rounded-lg focus-visible:bg-ws-accent focus-visible:px-4 focus-visible:py-2 focus-visible:text-ws-bg"
         >
-          <LeaderboardSidebar
-            isOpen={leaderboardOpen}
-            onToggle={handleToggle}
-          />
-        </nav>
+          Skip to leaderboard
+        </a>
 
-        {/* Detail Panel — hidden when comparison is active */}
-        <div className="pointer-events-auto" aria-live="polite">
-          <Suspense fallback={null}>
-            <AnimatePresence>
-              {selectedUri && !showComparison && <DetailPanel />}
-            </AnimatePresence>
-          </Suspense>
+        {/* 3D Canvas */}
+        <Canvas
+          camera={CAMERA_CONFIG}
+          dpr={[perfConfig.dprRange[0], dpr]}
+          gl={GL_CONFIG}
+        >
+          <PerformanceMonitor
+            onIncline={() => setDpr(perfConfig.dprRange[1])}
+            onDecline={() => setDpr(perfConfig.dprRange[0])}
+          >
+            <SceneManager />
+            <MoneyRain active={moneyRainActive} />
+            <ScreenshotBridge onRegister={handleScreenshotRegister} />
+            {perfConfig.enablePostProcessing && (
+              <Suspense fallback={null}>
+                <PostProcessing />
+              </Suspense>
+            )}
+          </PerformanceMonitor>
+          <AdaptiveDpr pixelated />
+        </Canvas>
+
+        {/* Header */}
+        <Header
+          onOpenGame={() => setGameOpen(true)}
+          onScreenshotDownload={handleScreenshotDownload}
+          onScreenshotCopy={handleScreenshotCopy}
+        />
+
+        {/* 2D HUD Overlay */}
+        <div className="pointer-events-none absolute inset-0 z-10">
+          {/* Mode Switcher — floating on mobile (header embeds it on desktop) */}
+          {isMobile && <ModeTabs />}
+
+          {/* Leaderboard Sidebar (desktop only) */}
+          {!isMobile && (
+            <nav
+              id="leaderboard"
+              aria-label="Wealth rankings"
+              className="pointer-events-auto"
+            >
+              <LeaderboardSidebar
+                isOpen={leaderboardOpen}
+                onToggle={handleToggle}
+              />
+            </nav>
+          )}
+
+          {/* Detail Panel — hidden when comparison is active (desktop only) */}
+          {!isMobile && (
+            <div className="pointer-events-auto" aria-live="polite">
+              <Suspense fallback={null}>
+                <AnimatePresence>
+                  {selectedUri && !showComparison && <DetailPanel />}
+                </AnimatePresence>
+              </Suspense>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Comparison overlay components */}
-      <AnimatePresence>{selectedUri && <ComparisonBar />}</AnimatePresence>
-      <AnimatePresence>
-        {showComparison && hasComparisonResults && <ComparisonResults />}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showComparison &&
-          hasComparisonResults &&
-          netWorth > 0 &&
-          selectedUri && <TimeToEarn />}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showComparison && selectedUri && netWorth > 0 && <WealthRace />}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showComparison && selectedUri && <FunFactCard />}
-      </AnimatePresence>
-    </div>
+        {/* Mobile bottom triggers */}
+        {isMobile && (
+          <div className="pointer-events-auto fixed bottom-4 left-4 z-30 flex gap-2">
+            <button
+              onClick={() => setMobileLeaderboard(true)}
+              className="glass-panel rounded-xl px-3 py-2 text-sm text-ws-text-primary"
+              aria-label="Open leaderboard"
+            >
+              Rankings
+            </button>
+            {selectedUri && !showComparison && (
+              <button
+                onClick={() => setMobileDetail(true)}
+                className="glass-panel rounded-xl px-3 py-2 text-sm text-ws-text-primary"
+                aria-label="Open detail"
+              >
+                Details
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Mobile sheets */}
+        {isMobile && (
+          <>
+            <MobileSheet
+              title="Wealth Rankings"
+              open={mobileLeaderboard}
+              onOpenChange={setMobileLeaderboard}
+            >
+              <LeaderboardSidebar
+                isOpen
+                onToggle={() => setMobileLeaderboard(false)}
+              />
+            </MobileSheet>
+            <MobileSheet
+              title="Billionaire Details"
+              open={mobileDetail && !!selectedUri && !showComparison}
+              onOpenChange={setMobileDetail}
+            >
+              <Suspense fallback={null}>
+                {selectedUri && <DetailPanel />}
+              </Suspense>
+            </MobileSheet>
+          </>
+        )}
+
+        {/* Comparison overlay components */}
+        <AnimatePresence>{selectedUri && <ComparisonBar />}</AnimatePresence>
+        <AnimatePresence>
+          {showComparison && hasComparisonResults && <ComparisonResults />}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showComparison &&
+            hasComparisonResults &&
+            netWorth > 0 &&
+            selectedUri && <TimeToEarn />}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showComparison && selectedUri && netWorth > 0 && <WealthRace />}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showComparison && selectedUri && <FunFactCard />}
+        </AnimatePresence>
+
+        {/* Achievement toast */}
+        <AchievementToast />
+
+        {/* Guess the Wealth game */}
+        <AnimatePresence>
+          {gameOpen && (
+            <Suspense fallback={null}>
+              <GuessTheWealth onClose={() => setGameOpen(false)} />
+            </Suspense>
+          )}
+        </AnimatePresence>
+      </div>
+    </MotionConfig>
   )
 }

@@ -1,6 +1,7 @@
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
+import { useSpring, animated } from '@react-spring/three'
 import {
   SphereGeometry,
   ShaderMaterial,
@@ -10,6 +11,7 @@ import {
 } from 'three'
 import type { Mesh } from 'three'
 import { sunVertexShader, sunFragmentShader } from './shaders/sunShader'
+import { useSunEasterEgg } from '@/hooks/useSunEasterEgg'
 import {
   SUN_RADIUS,
   SUN_SEGMENTS,
@@ -34,10 +36,18 @@ import {
   SUN_LIGHT_DECAY,
   SUN_PULSE_AMPLITUDE,
   SUN_SHADER_INTENSITY,
+  SUPERNOVA_EXPLOSION_SCALE,
+  SUPERNOVA_REFORM_SCALE,
+  SUPERNOVA_SPARKLE_COUNT,
+  SUPERNOVA_SPARKLE_SIZE,
+  SUPERNOVA_SPARKLE_SPEED,
+  SUPERNOVA_SPARKLE_SCALE,
+  SUPERNOVA_SPARKLE_COLOR,
 } from '@/utils/constants'
 
 export function WealthSun() {
   const meshRef = useRef<Mesh>(null)
+  const { handleSunClick, isExploding, isReforming } = useSunEasterEgg()
 
   const geometry = useMemo(
     () => new SphereGeometry(SUN_RADIUS, SUN_SEGMENTS, SUN_SEGMENTS),
@@ -88,7 +98,22 @@ export function WealthSun() {
     }
   }, [geometry, shaderMaterial, glowGeometry, glowMaterial])
 
+  const { scale: supernovaScale } = useSpring({
+    scale: isExploding
+      ? SUPERNOVA_EXPLOSION_SCALE
+      : isReforming
+        ? SUPERNOVA_REFORM_SCALE
+        : 1,
+    config: isExploding
+      ? { mass: 1, tension: 200, friction: 20 }
+      : isReforming
+        ? { mass: 1.5, tension: 120, friction: 14 }
+        : { mass: 1, tension: 200, friction: 26 },
+  })
+
   useFrame(({ clock }) => {
+    if (isExploding || isReforming) return
+
     const t = clock.getElapsedTime()
 
     if (meshRef.current) {
@@ -99,7 +124,7 @@ export function WealthSun() {
   })
 
   return (
-    <group>
+    <animated.group scale={supernovaScale} onClick={handleSunClick}>
       {/* Main plasma sphere */}
       <mesh ref={meshRef} geometry={geometry} material={shaderMaterial} />
 
@@ -126,6 +151,17 @@ export function WealthSun() {
         color={SUN_CORONA_OUTER_COLOR}
       />
 
+      {/* Supernova explosion sparkles */}
+      {isExploding && (
+        <Sparkles
+          count={SUPERNOVA_SPARKLE_COUNT}
+          size={SUPERNOVA_SPARKLE_SIZE}
+          speed={SUPERNOVA_SPARKLE_SPEED}
+          scale={SUPERNOVA_SPARKLE_SCALE}
+          color={SUPERNOVA_SPARKLE_COLOR}
+        />
+      )}
+
       {/* Central point light */}
       <pointLight
         intensity={SUN_LIGHT_INTENSITY}
@@ -133,6 +169,6 @@ export function WealthSun() {
         distance={SUN_LIGHT_DISTANCE}
         decay={SUN_LIGHT_DECAY}
       />
-    </group>
+    </animated.group>
   )
 }
