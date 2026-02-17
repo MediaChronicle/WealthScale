@@ -16,3 +16,9 @@ export const useAppStore = create<AppStore>()(
     ...createUserSlice(...args),
   })),
 )
+
+export type {
+  ComparisonResults,
+  RaceStatus,
+  WealthRaceState,
+} from './userStore'

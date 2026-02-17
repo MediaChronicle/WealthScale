@@ -1,11 +1,4 @@
-import {
-  useState,
-  useMemo,
-  useEffect,
-  useCallback,
-  lazy,
-  Suspense,
-} from 'react'
+import { useMemo, useEffect, useCallback, lazy, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { AnimatePresence } from 'motion/react'
 import { SceneManager } from '@/scene/SceneManager'
@@ -20,6 +13,11 @@ import {
   DPR_RANGE,
 } from '@/utils/constants'
 import { LeaderboardSidebar } from '@/components/leaderboard/LeaderboardSidebar'
+import { ComparisonBar } from '@/components/comparison/ComparisonBar'
+import { ComparisonResults } from '@/components/comparison/ComparisonResults'
+import { TimeToEarn } from '@/components/comparison/TimeToEarn'
+import { WealthRace } from '@/components/comparison/WealthRace'
+import { FunFactCard } from '@/components/funFacts/FunFactCard'
 import { ZodError } from 'zod'
 
 const DetailPanel = lazy(() =>
@@ -61,11 +59,13 @@ export default function App() {
   } = useBillionaireList()
   const setBillionaires = useAppStore((s) => s.setBillionaires)
   const selectedUri = useAppStore((s) => s.selectedUri)
-  const [leaderboardOpen, setLeaderboardOpen] = useState(true)
+  const showComparison = useAppStore((s) => s.showComparison)
+  const leaderboardOpen = useAppStore((s) => s.leaderboardOpen)
+  const setLeaderboardOpen = useAppStore((s) => s.setLeaderboardOpen)
 
   const handleToggle = useCallback(
-    () => setLeaderboardOpen((prev) => !prev),
-    [],
+    () => setLeaderboardOpen(!leaderboardOpen),
+    [leaderboardOpen, setLeaderboardOpen],
   )
 
   useEffect(() => {
@@ -149,13 +149,22 @@ export default function App() {
           />
         </nav>
 
-        {/* Detail Panel */}
+        {/* Detail Panel — hidden when comparison is active (D5) */}
         <div className="pointer-events-auto" aria-live="polite">
           <Suspense fallback={null}>
-            <AnimatePresence>{selectedUri && <DetailPanel />}</AnimatePresence>
+            <AnimatePresence>
+              {selectedUri && !showComparison && <DetailPanel />}
+            </AnimatePresence>
           </Suspense>
         </div>
       </div>
+
+      {/* Comparison overlay components */}
+      <ComparisonBar />
+      <ComparisonResults />
+      <TimeToEarn />
+      <WealthRace />
+      <FunFactCard />
     </div>
   )
 }

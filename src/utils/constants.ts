@@ -120,3 +120,48 @@ export const DPR_RANGE: [number, number] = [1, 2]
 
 // Mobile
 export const MOBILE_BREAKPOINT_PX = 768
+
+// ===== Comparison Engine =====
+
+// ComparisonBar
+export const COMPARISON_SLIDER_MAX = 10_000_000
+export const COMPARISON_SLIDER_STEP = 1_000
+export const COMPARISON_PRESETS = [
+  { label: 'Median US Salary', value: 59_000, display: '$59K' },
+  { label: 'Median US Household', value: 75_000, display: '$75K' },
+  { label: 'Top 1%', value: 5_800_000, display: '$5.8M' },
+] as const
+
+// WealthRace
+export const RACE_DURATION_SECONDS = 10
+
+// FunFact
+export const FUN_FACT_ROTATION_MS = 8_000
+
+// UserParticle (3D)
+export const USER_PARTICLE_MIN_RADIUS = 0.02
+export const USER_PARTICLE_MAX_RADIUS = 0.15
+export const USER_PARTICLE_OFFSET_X = 1.5
+export const USER_PARTICLE_OFFSET_Y = 0.5
+export const USER_PARTICLE_SPARKLE_COUNT = 20
+export const USER_PARTICLE_SPARKLE_SIZE = 2
+export const USER_PARTICLE_LABEL_FONT_SIZE = 0.25
+export const USER_PARTICLE_SUB_LABEL_FONT_SIZE = 0.15
+export const USER_PARTICLE_LABEL_OUTLINE = 0.015
+export const USER_PARTICLE_SEGMENTS = 16
+
+// TimeToEarn GSAP counter
+export const TIME_TO_EARN_COUNTER_DURATION = 2
+
+// ComparisonResults SVG ring
+export const PERCENT_RING_RADIUS = 40
+export const PERCENT_RING_SIZE = 100
+export const PERCENT_RING_STROKE = 6
+export const PERCENT_RING_MIN_DISPLAY = 0.5
+
+// Panel animation timings
+export const COMPARISON_BAR_SPRING = { stiffness: 300, damping: 30 }
+export const COMPARISON_RESULTS_STAGGER_DELAY = 0.12
+export const TIME_TO_EARN_SLIDE_DELAY = 0.3
+export const WEALTH_RACE_SLIDE_DELAY = 0.5
+export const FUN_FACT_SLIDE_DELAY = 0.6

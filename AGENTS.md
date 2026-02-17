@@ -72,6 +72,32 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 - **Include `devtools` middleware** in store configuration.
 - **Use granular selectors** for reading state.
 
+#### User Slice (Comparison State)
+
+Expanded with wealth comparison features:
+
+```typescript
+// src/stores/userStore.ts
+interface ComparisonResults {
+  scalePercent: number // User wealth as % of billionaire's
+  ratio: string // "1 : 10,345,678"
+  timeToEarn: string // e.g., "0.003 seconds"
+  timeToEarnSeconds: number
+  userStackFeet: number
+  billionaireStackFeet: number
+}
+
+type RaceStatus = 'idle' | 'running' | 'finished'
+
+interface WealthRaceState {
+  status: RaceStatus
+  elapsed: number
+  userAccumulated: number
+  billionaireAccumulated: number
+  duration: number // 10 seconds default
+}
+```
+
 ### Styling (Tailwind CSS v4)
 
 - **CSS-first config** — no `tailwind.config.js`. Tokens in `src/index.css` via `@theme`.
@@ -98,15 +124,22 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 
 ```
 src/
-├── api/           # Fetch client, endpoints, Zod schemas, TanStack Query hooks
-├── components/    # 2D DOM UI (detail/, leaderboard/, ui/)
-├── hooks/         # Custom React hooks (useIsMobile.ts)
-├── scene/         # R3F 3D components organized by mode (cosmos/, shared/)
-├── stores/        # Zustand slices (billionaire, scene, user)
-├── utils/         # Pure functions (formatWealth.ts, wealthMath.ts, constants.ts)
-├── types/         # Shared TypeScript types
-├── lib/           # Utilities (utils.ts for cn() helper)
-└── index.css      # Tailwind v4 CSS-first config with custom theme
+├── api/              # Fetch client, endpoints, Zod schemas, TanStack Query hooks
+├── components/       # 2D DOM UI
+│   ├── comparison/   # Wealth comparison components (ComparisonBar, WealthRace, etc.)
+│   ├── detail/       # Billionaire detail panel
+│   ├── funFacts/     # Fun fact cards and overlays
+│   ├── leaderboard/  # Leaderboard sidebar
+│   └── ui/           # shadcn/ui primitives
+├── hooks/            # Custom React hooks (useFunFact.ts, useIsMobile.ts)
+├── scene/            # R3F 3D components organized by mode
+│   ├── cosmos/       # Solar system mode
+│   └── shared/       # Shared 3D components (UserParticle.tsx)
+├── stores/           # Zustand slices (billionaire, scene, user)
+├── utils/            # Pure functions (formatWealth.ts, wealthMath.ts, wealthComparison.ts, constants.ts)
+├── types/            # Shared TypeScript types
+├── lib/              # Utilities (utils.ts for cn() helper)
+└── index.css         # Tailwind v4 CSS-first config with custom theme
 ```
 
 ### Dual-Layer Rendering

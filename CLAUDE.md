@@ -57,6 +57,21 @@ RTB-API (CDN) → TanStack Query (6h staleTime) → Zod validation → Zustand s
 
 Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQuery`.
 
+### Comparison Engine
+
+When a billionaire is selected, a comparison overlay activates:
+
+- **`ComparisonBar`** — fixed bottom bar; user enters their net worth (input + slider + presets), computes results, sets `showComparison: true` and closes the leaderboard
+- **`ComparisonResults`** — fixed right panel; ratio, time-to-earn, bill-stack heights with animated percent ring
+- **`TimeToEarn`** — fixed left panel; GSAP counter animation for time-to-earn value
+- **`WealthRace`** — fixed bottom-right panel; 10-second race using GSAP timeline with direct DOM ref mutations (no Zustand in `onUpdate`)
+- **`FunFactCard`** — fixed bottom-left panel; rotating facts from `useFunFact` hook
+- **`UserParticle`** — R3F 3D particle that floats near the selected planet, sized proportional to user vs. billionaire wealth
+
+When `showComparison` is true, `DetailPanel` is hidden. All comparison components self-hide when `!selectedUri` or `!showComparison`.
+
+Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Comparison Engine =====` section of `constants.ts`.
+
 ### Key Directories
 
 - `src/api/` — fetch client, endpoint URLs, Zod schemas, TanStack Query hooks, data transformers
@@ -65,7 +80,7 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 - `src/scene/cosmos/shaders/` — GLSL shader source strings (e.g., `sunShader.ts` for the WealthSun plasma effect)
 - `src/components/` — 2D DOM UI organized by feature (`detail/`, `leaderboard/`, `comparison/`, `layout/`, `modeSwitcher/`, `funFacts/`, `achievements/`, `ui/`)
 - `src/hooks/` — custom React hooks (`useIsMobile.ts`, etc.)
-- `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `colorByIndustry.ts`, `constants.ts`
+- `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `wealthComparison.ts`, `colorByIndustry.ts`, `constants.ts`
 - `src/types/index.ts` — all shared TypeScript types
 - `doc/` — PRD and phase-by-phase implementation plans (PHASE-1 through PHASE-5)
 
@@ -106,6 +121,8 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 
 - Zustand slices pattern: each domain has a `StateCreator`, combined in `src/stores/index.ts` with `devtools` middleware.
 - Always use granular selectors: `useAppStore(s => s.mode)`, never `useAppStore()`.
+- `leaderboardOpen` / `setLeaderboardOpen` live in `sceneStore` (not local component state).
+- `userStore` holds `comparisonResults`, `wealthRace` (status/elapsed/accumulated), and actions `startRace` / `updateRace` / `finishRace` / `resetRace`. `toggleComparison` was replaced by `setShowComparison(bool)`.
 
 ### Animation
 
@@ -129,6 +146,10 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 - Hooks: `useCamelCase.ts`
 - Stores: `camelCaseStore.ts`
 - Utils/shaders: `camelCase.ts`
+
+### ESLint
+
+- `src/components/ui/**` is excluded from ESLint via `globalIgnores` in `eslint.config.js` — shadcn/ui components are not linted.
 
 ### Build
 

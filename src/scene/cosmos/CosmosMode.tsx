@@ -7,6 +7,7 @@ import { WealthSun } from './WealthSun'
 import { OrbitRing } from './OrbitRing'
 import { BillionairePlanet } from './BillionairePlanet'
 import { CameraController } from '@/scene/shared/CameraController'
+import { UserParticle } from '@/scene/shared/UserParticle'
 
 const PostProcessing = lazy(() =>
   import('@/scene/shared/PostProcessing').then((m) => ({
@@ -46,6 +47,8 @@ export function CosmosMode({ planets }: CosmosModeProps) {
           planetPositions={planetPositionsRef}
         />
       ))}
+
+      <UserParticle planetPositions={planetPositionsRef} />
 
       <CameraController
         controlsRef={controlsRef}
