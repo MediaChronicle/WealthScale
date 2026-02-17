@@ -67,15 +67,15 @@ export default function App() {
   const setBillionaires = useAppStore((s) => s.setBillionaires)
   const selectedUri = useAppStore((s) => s.selectedUri)
   const showComparison = useAppStore((s) => s.showComparison)
-  const comparisonResults = useAppStore((s) => s.comparisonResults)
+  const hasComparisonResults = useAppStore((s) => s.comparisonResults !== null)
   const netWorth = useAppStore((s) => s.netWorth)
   const leaderboardOpen = useAppStore((s) => s.leaderboardOpen)
   const setLeaderboardOpen = useAppStore((s) => s.setLeaderboardOpen)
   const isMobile = useIsMobile()
 
   const handleToggle = useCallback(
-    () => setLeaderboardOpen(!leaderboardOpen),
-    [leaderboardOpen, setLeaderboardOpen],
+    () => setLeaderboardOpen(!useAppStore.getState().leaderboardOpen),
+    [setLeaderboardOpen],
   )
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function App() {
       {/* Skip link for keyboard users */}
       <a
         href="#leaderboard"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-lg focus:bg-ws-accent focus:px-4 focus:py-2 focus:text-ws-bg"
+        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:z-50 focus-visible:rounded-lg focus-visible:bg-ws-accent focus-visible:px-4 focus-visible:py-2 focus-visible:text-ws-bg"
       >
         Skip to leaderboard
       </a>
@@ -175,12 +175,13 @@ export default function App() {
       {/* Comparison overlay components */}
       <AnimatePresence>{selectedUri && <ComparisonBar />}</AnimatePresence>
       <AnimatePresence>
-        {showComparison && comparisonResults && <ComparisonResults />}
+        {showComparison && hasComparisonResults && <ComparisonResults />}
       </AnimatePresence>
       <AnimatePresence>
-        {showComparison && comparisonResults && netWorth > 0 && selectedUri && (
-          <TimeToEarn />
-        )}
+        {showComparison &&
+          hasComparisonResults &&
+          netWorth > 0 &&
+          selectedUri && <TimeToEarn />}
       </AnimatePresence>
       <AnimatePresence>
         {showComparison && selectedUri && netWorth > 0 && <WealthRace />}

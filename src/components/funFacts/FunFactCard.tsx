@@ -13,8 +13,6 @@ export function FunFactCard() {
     target?.networth ?? 0,
   )
 
-  if (!target || !fact) return null
-
   return (
     <motion.div
       className="glass-panel pointer-events-auto fixed bottom-28 left-4 z-40 max-w-sm overflow-hidden p-5"
@@ -47,56 +45,62 @@ export function FunFactCard() {
           </h3>
         </div>
 
-        {/* Fact text with crossfade */}
-        <div className="mt-3 min-h-[4rem]">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={index}
-              className="font-body text-sm leading-relaxed text-ws-text-secondary"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              {fact}
-            </motion.p>
-          </AnimatePresence>
-        </div>
+        {fact ? (
+          <>
+            {/* Fact text with crossfade */}
+            <div className="mt-3 min-h-[4rem]">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={index}
+                  className="font-body text-sm leading-relaxed text-ws-text-secondary"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {fact}
+                </motion.p>
+              </AnimatePresence>
+            </div>
 
-        {/* Navigation */}
-        <div className="mt-3 flex items-center justify-between">
-          <button
-            onClick={previous}
-            className="rounded-full p-1 text-ws-text-secondary transition-colors hover:text-ws-accent"
-            aria-label="Previous fact"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-
-          {/* Dot indicators */}
-          <div className="flex gap-1">
-            {Array.from({ length: total }, (_, i) => (
+            {/* Navigation */}
+            <div className="mt-3 flex items-center justify-between">
               <button
-                key={i}
-                type="button"
-                onClick={() => goToIndex(i)}
-                aria-label={`Go to fact ${i + 1} of ${total}`}
-                aria-current={i === index ? 'true' : undefined}
-                className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                  i === index ? 'bg-ws-accent' : 'bg-white/20'
-                }`}
-              />
-            ))}
-          </div>
+                onClick={previous}
+                className="rounded-full p-1 text-ws-text-secondary transition-colors hover:text-ws-accent"
+                aria-label="Previous fact"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
 
-          <button
-            onClick={next}
-            className="rounded-full p-1 text-ws-text-secondary transition-colors hover:text-ws-accent"
-            aria-label="Next fact"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+              {/* Dot indicators */}
+              <div className="flex gap-1">
+                {Array.from({ length: total }, (_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => goToIndex(i)}
+                    aria-label={`Go to fact ${i + 1} of ${total}`}
+                    aria-current={i === index ? 'true' : undefined}
+                    className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                      i === index ? 'bg-ws-accent' : 'bg-white/20'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={next}
+                className="rounded-full p-1 text-ws-text-secondary transition-colors hover:text-ws-accent"
+                aria-label="Next fact"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="mt-3 min-h-[4rem] animate-pulse rounded bg-white/5" />
+        )}
       </div>
     </motion.div>
   )

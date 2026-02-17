@@ -5,6 +5,7 @@ import {
   TEXT_OUTLINE_COLOR,
   TOWER_LABEL_OFFSET_X,
   TOWER_LABEL_HEIGHT_FACTOR,
+  WS_ACCENT_COLOR,
 } from '@/utils/constants'
 
 interface TowerLabelProps {
@@ -34,7 +35,7 @@ export function TowerLabel({ name, networth, height }: TowerLabelProps) {
       </Text>
       <Text
         fontSize={0.35}
-        color="#00d4ff"
+        color={WS_ACCENT_COLOR}
         anchorX="left"
         anchorY="top"
         position={[0, -0.1, 0]}

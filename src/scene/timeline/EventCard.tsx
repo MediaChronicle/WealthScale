@@ -1,7 +1,11 @@
 import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
-import { TIMELINE_EVENT_VISIBILITY_RANGE } from '@/utils/constants'
+import {
+  TIMELINE_EVENT_VISIBILITY_RANGE,
+  WS_ACCENT_COLOR_30,
+  WS_ACCENT_GLOW,
+} from '@/utils/constants'
 
 interface EventCardProps {
   label: string
@@ -41,8 +45,8 @@ export function EventCard({ label, date, z }: EventCardProps) {
           ref={containerRef}
           className="glass-panel min-w-[220px] px-4 py-3"
           style={{
-            borderColor: 'rgba(0, 212, 255, 0.3)',
-            boxShadow: '0 0 20px rgba(0, 212, 255, 0.15)',
+            borderColor: WS_ACCENT_COLOR_30,
+            boxShadow: `0 0 20px ${WS_ACCENT_GLOW}`,
             transition: 'opacity 0.3s ease',
           }}
         >

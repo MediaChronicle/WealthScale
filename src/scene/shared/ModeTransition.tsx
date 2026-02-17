@@ -1,9 +1,11 @@
 import { useRef, useEffect } from 'react'
 import { useSpring, animated } from '@react-spring/three'
 import { useAppStore } from '@/stores'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import {
   TRANSITION_COLLAPSE_SPRING,
   TRANSITION_EXPAND_SPRING,
+  TRANSITION_REDUCED_CONFIG,
 } from '@/utils/constants'
 import type { Group } from 'three'
 import type { ReactNode } from 'react'
@@ -18,6 +20,7 @@ export function ModeTransition({ children }: ModeTransitionProps) {
   const setTransitioning = useAppStore((s) => s.setTransitioning)
   const groupRef = useRef<Group>(null)
   const phaseRef = useRef<'idle' | 'collapsing' | 'expanding'>('idle')
+  const reducedMotion = useReducedMotion()
 
   const [spring, springApi] = useSpring(() => ({
     scale: 1,
@@ -31,16 +34,20 @@ export function ModeTransition({ children }: ModeTransitionProps) {
 
       springApi.start({
         scale: 0,
-        rotationY: Math.PI * 2,
-        config: TRANSITION_COLLAPSE_SPRING,
+        rotationY: reducedMotion ? 0 : Math.PI * 2,
+        config: reducedMotion
+          ? TRANSITION_REDUCED_CONFIG
+          : TRANSITION_COLLAPSE_SPRING,
         onRest: () => {
           commitMode()
           phaseRef.current = 'expanding'
 
           springApi.start({
             scale: 1,
-            rotationY: Math.PI * 4,
-            config: TRANSITION_EXPAND_SPRING,
+            rotationY: reducedMotion ? 0 : Math.PI * 4,
+            config: reducedMotion
+              ? TRANSITION_REDUCED_CONFIG
+              : TRANSITION_EXPAND_SPRING,
             onRest: () => {
               phaseRef.current = 'idle'
               setTransitioning(false)
@@ -50,7 +57,7 @@ export function ModeTransition({ children }: ModeTransitionProps) {
         },
       })
     }
-  }, [isTransitioning, springApi, commitMode, setTransitioning])
+  }, [isTransitioning, springApi, commitMode, setTransitioning, reducedMotion])
 
   return (
     <animated.group

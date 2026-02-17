@@ -95,8 +95,6 @@ export function WealthRace() {
     }
   }, [])
 
-  if (!target) return null
-
   const multiplier =
     wealthRace.status === 'finished' && wealthRace.userAccumulated > 0
       ? Math.round(
@@ -117,114 +115,118 @@ export function WealthRace() {
         delay: WEALTH_RACE_SLIDE_DELAY,
       }}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Zap className="h-4 w-4 text-ws-gold" />
-          <h3 className="font-display text-sm font-semibold text-ws-text-primary">
-            {RACE_DURATION_SECONDS}s Wealth Race
-          </h3>
-        </div>
-        {wealthRace.status !== 'idle' && (
-          <span
-            ref={timerRef}
-            aria-label="Race timer"
-            className="font-mono text-xs tabular-nums text-ws-text-secondary"
-          >
-            0.0s
-          </span>
-        )}
-      </div>
-
-      <div className="mt-4 space-y-3">
-        {/* You */}
-        <div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-ws-text-secondary">You</span>
-            <span
-              ref={userDisplayRef}
-              aria-label="Your earnings"
-              className="font-mono tabular-nums text-ws-accent"
-            >
-              $0
-            </span>
+      {target && (
+        <>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-ws-gold" />
+              <h3 className="font-display text-sm font-semibold text-ws-text-primary">
+                {RACE_DURATION_SECONDS}s Wealth Race
+              </h3>
+            </div>
+            {wealthRace.status !== 'idle' && (
+              <span
+                ref={timerRef}
+                aria-label="Race timer"
+                className="font-mono text-xs tabular-nums text-ws-text-secondary"
+              >
+                0.0s
+              </span>
+            )}
           </div>
-          <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
-            <div
-              ref={userBarRef}
-              className="h-full rounded-full bg-ws-accent transition-none"
-              style={{ width: '0%' }}
-            />
+
+          <div className="mt-4 space-y-3">
+            {/* You */}
+            <div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-ws-text-secondary">You</span>
+                <span
+                  ref={userDisplayRef}
+                  aria-label="Your earnings"
+                  className="font-mono tabular-nums text-ws-accent"
+                >
+                  $0
+                </span>
+              </div>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
+                <div
+                  ref={userBarRef}
+                  className="h-full rounded-full bg-ws-accent transition-none"
+                  style={{ width: '0%' }}
+                />
+              </div>
+            </div>
+
+            {/* Billionaire */}
+            <div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-ws-text-secondary">
+                  {target.name.split(' ').pop()}
+                </span>
+                <span
+                  ref={billionaireDisplayRef}
+                  aria-label="Their earnings"
+                  className="font-mono tabular-nums text-ws-gold"
+                >
+                  $0
+                </span>
+              </div>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
+                <div
+                  ref={billionaireBarRef}
+                  className="h-full rounded-full bg-ws-gold transition-none"
+                  style={{ width: '0%' }}
+                />
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Billionaire */}
-        <div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-ws-text-secondary">
-              {target.name.split(' ').pop()}
-            </span>
-            <span
-              ref={billionaireDisplayRef}
-              aria-label="Their earnings"
-              className="font-mono tabular-nums text-ws-gold"
-            >
-              $0
-            </span>
-          </div>
-          <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
-            <div
-              ref={billionaireBarRef}
-              className="h-full rounded-full bg-ws-gold transition-none"
-              style={{ width: '0%' }}
-            />
-          </div>
-        </div>
-      </div>
+          {/* Action buttons / Results */}
+          <div className="mt-4">
+            {wealthRace.status === 'idle' && (
+              <Button onClick={handleStart} size="sm" className="w-full gap-2">
+                <Play className="h-3 w-3" />
+                Start Race
+              </Button>
+            )}
 
-      {/* Action buttons / Results */}
-      <div className="mt-4">
-        {wealthRace.status === 'idle' && (
-          <Button onClick={handleStart} size="sm" className="w-full gap-2">
-            <Play className="h-3 w-3" />
-            Start Race
-          </Button>
-        )}
-
-        {wealthRace.status === 'running' && (
-          <p className="animate-pulse text-center font-mono text-xs text-ws-accent">
-            Racing...
-          </p>
-        )}
-
-        {wealthRace.status === 'finished' && (
-          <div className="space-y-2" role="status" aria-live="polite">
-            {multiplier > 0 && (
-              <p className="text-center font-mono text-sm tabular-nums text-ws-gold">
-                They earned{' '}
-                <span className="text-lg font-bold">
-                  {multiplier.toLocaleString()}x
-                </span>{' '}
-                more
+            {wealthRace.status === 'running' && (
+              <p className="animate-pulse text-center font-mono text-xs text-ws-accent">
+                Racing...
               </p>
             )}
-            <div className="flex justify-between text-xs text-ws-text-secondary">
-              <span>You: {formatDollars(wealthRace.userAccumulated)}</span>
-              <span>
-                Them: {formatDollars(wealthRace.billionaireAccumulated)}
-              </span>
-            </div>
-            <Button
-              onClick={handleReset}
-              variant="secondary"
-              size="sm"
-              className="w-full gap-2"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Reset
-            </Button>
+
+            {wealthRace.status === 'finished' && (
+              <div className="space-y-2" role="status" aria-live="polite">
+                {multiplier > 0 && (
+                  <p className="text-center font-mono text-sm tabular-nums text-ws-gold">
+                    They earned{' '}
+                    <span className="text-lg font-bold">
+                      {multiplier.toLocaleString()}x
+                    </span>{' '}
+                    more
+                  </p>
+                )}
+                <div className="flex justify-between text-xs text-ws-text-secondary">
+                  <span>You: {formatDollars(wealthRace.userAccumulated)}</span>
+                  <span>
+                    Them: {formatDollars(wealthRace.billionaireAccumulated)}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleReset}
+                  variant="secondary"
+                  size="sm"
+                  className="w-full gap-2"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Reset
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </motion.div>
   )
 }

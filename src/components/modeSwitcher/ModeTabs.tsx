@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'motion/react'
 import { Globe, Building2, Waves, Clock } from 'lucide-react'
 import { useAppStore } from '@/stores'
@@ -26,11 +26,12 @@ export function ModeTabs() {
   const setMode = useAppStore((s) => s.setMode)
   const isTransitioning = useAppStore((s) => s.isTransitioning)
   const tabRefs = useRef<Map<VisualizationMode, HTMLButtonElement>>(new Map())
+  const containerRef = useRef<HTMLDivElement>(null)
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
 
   const activeMode = pendingMode ?? mode
 
-  useEffect(() => {
+  const updateUnderline = useCallback(() => {
     const activeTab = tabRefs.current.get(activeMode)
     if (!activeTab) return
 
@@ -46,15 +47,38 @@ export function ModeTabs() {
     })
   }, [activeMode])
 
+  useEffect(() => {
+    updateUnderline()
+  }, [updateUnderline])
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const observer = new ResizeObserver(() => {
+      updateUnderline()
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [updateUnderline])
+
   return (
     <div className="pointer-events-auto fixed left-1/2 top-6 z-50 -translate-x-1/2">
-      <div className="glass-panel relative flex items-center gap-1 rounded-2xl px-2 py-2">
+      <div
+        ref={containerRef}
+        role="tablist"
+        aria-label="Visualization modes"
+        className="glass-panel relative flex items-center gap-1 rounded-2xl px-2 py-2"
+      >
         {TABS.map(({ mode: tabMode, icon: Icon, label }) => (
           <button
             key={tabMode}
             ref={(el) => {
               if (el) tabRefs.current.set(tabMode, el)
             }}
+            role="tab"
+            aria-selected={activeMode === tabMode}
+            aria-label={label}
             onClick={() => {
               if (tabMode !== activeMode && !isTransitioning) {
                 setMode(tabMode)
@@ -66,6 +90,7 @@ export function ModeTabs() {
               'font-display text-sm transition-colors duration-200',
               'hover:bg-ws-glass-hover',
               'disabled:pointer-events-none disabled:opacity-50',
+              'outline-none focus-visible:ring-2 focus-visible:ring-ws-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ws-bg',
               activeMode === tabMode
                 ? 'text-ws-accent'
                 : 'text-ws-text-secondary hover:text-ws-text-primary',

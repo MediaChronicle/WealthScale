@@ -1,7 +1,6 @@
 import { motion } from 'motion/react'
 import { Scale, Clock, Layers, Percent } from 'lucide-react'
 import { useAppStore } from '@/stores'
-import type { ComparisonResults as ComparisonResultsData } from '@/stores/userStore'
 import {
   COMPARISON_RESULTS_STAGGER_DELAY,
   PERCENT_RING_RADIUS,
@@ -93,11 +92,7 @@ function StatRow({ icon, label, value, highlight, index }: StatRowProps) {
 }
 
 export function ComparisonResults() {
-  const comparisonResults = useAppStore(
-    (s) => s.comparisonResults,
-  ) as ComparisonResultsData | null
-
-  if (!comparisonResults) return null
+  const comparisonResults = useAppStore((s) => s.comparisonResults)
 
   return (
     <motion.div
@@ -107,43 +102,47 @@ export function ComparisonResults() {
       exit={{ opacity: 0, x: 100 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
-      <h3 className="text-center font-display text-sm font-semibold text-ws-text-primary">
-        Your Wealth vs Theirs
-      </h3>
+      {comparisonResults && (
+        <>
+          <h3 className="text-center font-display text-sm font-semibold text-ws-text-primary">
+            Your Wealth vs Theirs
+          </h3>
 
-      <PercentRing percent={comparisonResults.scalePercent} />
+          <PercentRing percent={comparisonResults.scalePercent} />
 
-      <div className="space-y-2">
-        <StatRow
-          icon={<Scale className="h-4 w-4" />}
-          label="Ratio"
-          value={comparisonResults.ratio}
-          index={0}
-        />
-        <StatRow
-          icon={<Clock className="h-4 w-4" />}
-          label="Time to earn their fortune"
-          value={comparisonResults.timeToEarn}
-          highlight
-          index={1}
-        />
-        <StatRow
-          icon={<Layers className="h-4 w-4" />}
-          label="Your $100 bill stack"
-          value={`${comparisonResults.userStackFeet.toFixed(1)} ft`}
-          index={2}
-        />
-        <StatRow
-          icon={<Percent className="h-4 w-4" />}
-          label="Their $100 bill stack"
-          value={
-            comparisonResults.billionaireStackFeet >= FEET_PER_MILE
-              ? `${(comparisonResults.billionaireStackFeet / FEET_PER_MILE).toFixed(1)} miles`
-              : `${comparisonResults.billionaireStackFeet.toFixed(0)} ft`
-          }
-          index={3}
-        />
-      </div>
+          <div className="space-y-2">
+            <StatRow
+              icon={<Scale className="h-4 w-4" />}
+              label="Ratio"
+              value={comparisonResults.ratio}
+              index={0}
+            />
+            <StatRow
+              icon={<Clock className="h-4 w-4" />}
+              label="Time to earn their fortune"
+              value={comparisonResults.timeToEarn}
+              highlight
+              index={1}
+            />
+            <StatRow
+              icon={<Layers className="h-4 w-4" />}
+              label="Your $100 bill stack"
+              value={`${comparisonResults.userStackFeet.toFixed(1)} ft`}
+              index={2}
+            />
+            <StatRow
+              icon={<Percent className="h-4 w-4" />}
+              label="Their $100 bill stack"
+              value={
+                comparisonResults.billionaireStackFeet >= FEET_PER_MILE
+                  ? `${(comparisonResults.billionaireStackFeet / FEET_PER_MILE).toFixed(1)} miles`
+                  : `${comparisonResults.billionaireStackFeet.toFixed(0)} ft`
+              }
+              index={3}
+            />
+          </div>
+        </>
+      )}
     </motion.div>
   )
 }

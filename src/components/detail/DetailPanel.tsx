@@ -1,7 +1,8 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import { motion } from 'motion/react'
 import { X, ExternalLink, GraduationCap, Building2, MapPin } from 'lucide-react'
 import { useAppStore } from '@/stores'
+import { useSelectedBillionaire } from '@/hooks/useSelectedBillionaire'
 import { useBillionaireProfile } from '@/api/queries'
 import { formatWealth } from '@/utils/formatWealth'
 import { getIndustryColor } from '@/utils/colorByIndustry'
@@ -24,17 +25,43 @@ function countryCodeToEmoji(code: string): string {
 
 export function DetailPanel() {
   const panelRef = useRef<HTMLDivElement>(null)
-  const entry = useAppStore((s) =>
-    s.billionaires.find((b) => b.uri === s.selectedUri),
-  )
+  const entry = useSelectedBillionaire()
   const selectedUri = useAppStore((s) => s.selectedUri)
   const selectBillionaire = useAppStore((s) => s.selectBillionaire)
 
   const { data: profile, isPending } = useBillionaireProfile(selectedUri)
 
+  const FOCUSABLE_SELECTOR =
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key !== 'Tab' || !panelRef.current) return
+
+    const focusable =
+      panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+    if (focusable.length === 0) return
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }, [])
+
   useEffect(() => {
     panelRef.current?.focus()
-  }, [])
+
+    const panel = panelRef.current
+    if (!panel) return
+
+    panel.addEventListener('keydown', handleKeyDown)
+    return () => panel.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   if (!entry) return null
 

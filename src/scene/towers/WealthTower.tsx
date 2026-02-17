@@ -12,6 +12,7 @@ import {
   TOWER_EMISSIVE_BASE,
   TOWER_EMISSIVE_PULSE,
   TOWER_PULSE_SPEED,
+  TOWER_GLASS_THICKNESS,
 } from '@/utils/constants'
 
 // Unit box geometry — shared across all towers, scaled per instance
@@ -39,7 +40,7 @@ export function WealthTower({
         transmission: TOWER_TRANSMISSION,
         roughness: TOWER_ROUGHNESS,
         metalness: TOWER_METALNESS,
-        thickness: 2,
+        thickness: TOWER_GLASS_THICKNESS,
         transparent: true,
         opacity: TOWER_OPACITY,
         side: FrontSide,

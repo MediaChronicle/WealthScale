@@ -31,6 +31,9 @@ import {
 
 const AnimatedText = animated(Text)
 
+// Unit sphere shared across all planets — sized via mesh.scale
+const UNIT_SPHERE = new SphereGeometry(1, PLANET_SEGMENTS, PLANET_SEGMENTS)
+
 interface BillionairePlanetProps {
   config: PlanetConfig
   planetPositions?: React.RefObject<Map<string, [number, number, number]>>
@@ -62,11 +65,6 @@ export function BillionairePlanet({
   )
   const orbitAngleRef = useRef(initialAngle)
 
-  const geometry = useMemo(
-    () => new SphereGeometry(config.radius, PLANET_SEGMENTS, PLANET_SEGMENTS),
-    [config.radius],
-  )
-
   const material = useMemo(
     () =>
       new MeshPhysicalMaterial({
@@ -81,10 +79,9 @@ export function BillionairePlanet({
 
   useEffect(() => {
     return () => {
-      geometry.dispose()
       material.dispose()
     }
-  }, [geometry, material])
+  }, [material])
 
   const { scale } = useSpring({
     scale: hovered || isSelected ? PLANET_HOVER_SCALE : PLANET_DEFAULT_SCALE,
@@ -135,10 +132,10 @@ export function BillionairePlanet({
         rotationIntensity={PLANET_FLOAT_ROTATION_INTENSITY}
       >
         <animated.mesh
-          geometry={geometry}
+          geometry={UNIT_SPHERE}
           material={material}
           rotation={[0, 0, (config.tilt * Math.PI) / 180]}
-          scale={scale}
+          scale={scale.to((s: number) => s * config.radius)}
           onClick={handleClick}
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}

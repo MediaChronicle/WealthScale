@@ -48,7 +48,7 @@ These layers share state through Zustand. The 3D scene reads from the store and 
 The scene has four mutually exclusive modes (`cosmos | towers | ocean | timeline`), only one mounted at a time. All modes are `React.lazy` code-split chunks. Mode switching uses a two-phase system via `sceneStore`:
 
 1. `setMode(mode)` sets `pendingMode` + `isTransitioning=true` (guarded: no-op if already transitioning)
-2. `ModeTransition` (react-spring) collapses the old scene (scale 1→0 with spin)
+2. `ModeTransition` (react-spring) collapses the old scene (scale 1→0 with spin). When `prefers-reduced-motion` is active (`useReducedMotion` hook), spin is disabled and a fast spring (`TRANSITION_REDUCED_CONFIG`) is used instead.
 3. At collapse midpoint, `commitMode()` swaps `pendingMode → mode`, mounting the new mode
 4. `ModeTransition` expands the new scene (scale 0→1), then sets `isTransitioning=false`
 
@@ -63,7 +63,7 @@ Post-processing (`Bloom`, `Vignette`, `ChromaticAberration`) is shared across al
 |------|------|--------|--------------------|
 | Cosmos | `CosmosMode` | `CameraController` + `OrbitControls` | WealthSun, BillionairePlanet, OrbitRing, SpaceBackground, CosmosLighting |
 | Towers | `TowersMode` | `OrbitControls` (street-level, maxPolarAngle) | WealthTower (unit box + scale), TowerLabel, EnergyParticles, GroundPlane |
-| Ocean | `OceanMode` | `OrbitControls` | WealthCreature (unit hemisphere + scale), WaterSurface, DepthMarker, CausticLights |
+| Ocean | `OceanMode` | `OrbitControls` | WealthCreature (unit hemisphere + scale), WaterSurface (GPU shader waves), DepthMarker, CausticLights |
 | Timeline | `TimelineMode` | Manual (wheel-scroll along Z, lerped in useFrame) | WealthBand (custom BufferGeometry), TimeTunnel, EventCard (drei Html), DateMarker |
 
 ### Data Flow
@@ -87,7 +87,7 @@ When a billionaire is selected, a comparison overlay activates:
 
 When `showComparison` is true, `DetailPanel` is hidden. Comparison components live **outside** the `pointer-events-none` HUD wrapper in `App.tsx`; each is mounted/unmounted via its own `<AnimatePresence>` with the correct condition (`selectedUri`, `showComparison`, `comparisonResults`, `netWorth > 0`). Components must have `pointer-events-auto` on their outer `motion.div`. Do **not** use early-return guards for visibility — that breaks exit animations.
 
-- `useSelectedBillionaire()` hook (granular selectors + `useMemo`) replaces `.find()` calls in all comparison components. Never subscribe to `billionaires` array just to call `.find()` inline.
+- `useSelectedBillionaire()` hook (granular selectors + `useMemo`) replaces `.find()` calls in all components that need the selected billionaire entry (`DetailPanel`, comparison components). Never subscribe to `billionaires` array just to call `.find()` inline.
 - `useFunFact` returns `{ fact, total, index, next, previous, goToIndex }`. Manual nav (`next`, `previous`, `goToIndex`) resets the auto-rotation timer so the user has time to read.
 
 Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Comparison Engine =====` section of `constants.ts`.
@@ -97,9 +97,9 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - `src/api/` — fetch client, endpoint URLs, Zod schemas, TanStack Query hooks, data transformers
 - `src/stores/` — Zustand slices (billionaire, scene, user, achievement) combined in `index.ts`
 - `src/scene/` — all R3F 3D components, organized by mode (`cosmos/`, `towers/`, `ocean/`, `timeline/`, `shared/`)
-- `src/scene/cosmos/shaders/` — GLSL shader source strings (e.g., `sunShader.ts` for the WealthSun plasma effect)
+- `src/scene/<mode>/shaders/` — GLSL shader source strings (e.g., `cosmos/shaders/sunShader.ts`, `ocean/shaders/waterShader.ts`)
 - `src/components/` — 2D DOM UI organized by feature (`detail/`, `leaderboard/`, `comparison/`, `layout/`, `modeSwitcher/`, `funFacts/`, `achievements/`, `ui/`)
-- `src/hooks/` — custom React hooks (`useIsMobile.ts`, `useSelectedBillionaire.ts`, `useFunFact.ts`, `useBillionaireTop10History.ts`, etc.)
+- `src/hooks/` — custom React hooks (`useIsMobile.ts`, `useReducedMotion.ts`, `useSelectedBillionaire.ts`, `useFunFact.ts`, `useBillionaireTop10History.ts`, etc.)
 - `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `wealthComparison.ts`, `colorByIndustry.ts`, `constants.ts`
 - `src/types/index.ts` — all shared TypeScript types
 - `doc/` — PRD and phase-by-phase implementation plans (PHASE-1 through PHASE-5)
@@ -125,6 +125,14 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - Glass panel pattern: `bg-ws-glass backdrop-blur-xl border border-ws-border rounded-2xl`.
 - shadcn/ui: New York style, neutral base, components in `src/components/ui/`. Utility `cn()` from `src/lib/utils.ts`.
 
+### Accessibility
+
+- `ModeTabs` uses ARIA tab pattern: `role="tablist"` on container, `role="tab"` + `aria-selected` on buttons.
+- Interactive elements use `focus-visible:` (not `focus:`) for keyboard focus indicators, avoiding showing focus rings on mouse clicks.
+- `DetailPanel` implements a keyboard focus trap (Tab/Shift-Tab cycles within the panel).
+- `ModeTransition` respects `prefers-reduced-motion` via `useReducedMotion` hook — disables spin animation and uses fast spring config.
+- Skip-to-content link in `App.tsx` uses `focus-visible:` variants.
+
 ### React Three Fiber
 
 - **Never `setState` in `useFrame`** — mutate refs directly for 60fps performance.
@@ -132,7 +140,8 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - Use drei's `useCursor(hovered)` hook for cursor changes — never manipulate `document.body.style.cursor` directly.
 - Use `<Instances>` for repeated meshes (particles, stars).
 - Post-processing (`Bloom`, `Vignette`, `ChromaticAberration`) is shared across all modes — rendered once in `App.tsx` inside `<Canvas>`, lazy-loaded via `React.lazy`, disabled on mobile (checked via `useIsMobile` hook). Individual modes do NOT render their own post-processing.
-- Scene colors, lighting values, and other 3D constants live in `src/utils/constants.ts` — never hardcode hex colors or magic numbers in scene components. Phase 4 constants are organized by mode under `// ===== Phase 4: Visualization Modes =====`.
+- Scene colors, lighting values, and other 3D constants live in `src/utils/constants.ts` — never hardcode hex colors or magic numbers in scene components. Phase 4 constants are organized by mode under `// ===== Phase 4: Visualization Modes =====`. The canonical accent color is `WS_ACCENT_COLOR` (`#00d4ff`) — use this constant instead of hardcoding the hex value.
+- Avoid per-instance `<pointLight>` on repeated meshes (e.g., ocean creatures) — use shared scene lights + emissive materials instead to keep the light count low.
 - **React 19 purity rule**: Never use `Math.random()` inside `useMemo` or during render. Use a seeded deterministic pseudo-random function instead (see `seededRandom()` in `EnergyParticles.tsx`).
 - Custom GLSL shaders are exported as template literal strings from `src/scene/<mode>/shaders/` and consumed by `ShaderMaterial`.
 - 3D components read selection state directly from Zustand (`useAppStore(s => s.selectedUri)`) — avoid prop-drilling callbacks like `onSelect`.
@@ -141,7 +150,8 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 ### State
 
 - Zustand slices pattern: each domain has a `StateCreator`, combined in `src/stores/index.ts` with `devtools` middleware.
-- Always use granular selectors: `useAppStore(s => s.mode)`, never `useAppStore()`.
+- Always use granular selectors: `useAppStore(s => s.mode)`, never `useAppStore()`. When a component only needs a boolean derived from an object (e.g., `comparisonResults !== null`), derive the boolean in the selector to avoid re-renders on object identity changes.
+- In `useCallback`, avoid closing over reactive store values that cause the callback to be recreated. Use `useAppStore.getState()` inside the callback to read live values at call time (e.g., `handleToggle` reads `leaderboardOpen` via `getState()`).
 - `leaderboardOpen` / `setLeaderboardOpen` live in `sceneStore` (not local component state).
 - `userStore` holds `comparisonResults`, `wealthRace` (status/elapsed/accumulated), and actions `startRace` / `updateRace` / `finishRace` / `resetRace`. `toggleComparison` was replaced by `setShowComparison(bool)`.
 - **Two-phase mode switching** in `sceneStore`: `setMode(mode)` sets `pendingMode` + `isTransitioning=true` (guarded: no-op if already transitioning). `commitMode()` swaps `pendingMode → mode`. `ModeTabs` reads `pendingMode ?? mode` for immediate visual feedback on tab click.

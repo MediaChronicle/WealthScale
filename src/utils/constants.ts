@@ -334,9 +334,54 @@ export const TRANSITION_EXPAND_SPRING = {
   tension: 170,
   friction: 28,
 }
+export const TRANSITION_REDUCED_CONFIG = { mass: 1, tension: 500, friction: 40 }
 
 // ModeTabs
 export const MODE_TAB_SPRING = { stiffness: 400, damping: 30 }
+
+// Shared accent color (canonical — replaces scattered #00d4ff hardcodes)
+export const WS_ACCENT_COLOR = '#00d4ff'
+export const WS_ACCENT_COLOR_30 = 'rgba(0, 212, 255, 0.3)'
+export const WS_ACCENT_GLOW = 'rgba(0, 212, 255, 0.15)'
+
+// Tower glass material
+export const TOWER_GLASS_THICKNESS = 2
+
+// Timeline spotlight
+export const TIMELINE_SPOTLIGHT_COLOR = '#ffffff'
+export const TIMELINE_SPOTLIGHT_POSITION: [number, number, number] = [0, 5, 0]
+export const TIMELINE_SPOTLIGHT_ANGLE = 0.5
+export const TIMELINE_SPOTLIGHT_PENUMBRA = 0.8
+export const TIMELINE_SPOTLIGHT_DISTANCE = 30
+
+// Caustic light animation parameters
+export const OCEAN_CAUSTIC_SPOT1_SPEED_X = 0.3
+export const OCEAN_CAUSTIC_SPOT1_SPEED_Z = 0.2
+export const OCEAN_CAUSTIC_SPOT1_AMP_X = 3
+export const OCEAN_CAUSTIC_SPOT1_AMP_Z = 3
+export const OCEAN_CAUSTIC_SPOT2_SPEED_X = 0.25
+export const OCEAN_CAUSTIC_SPOT2_SPEED_Z = 0.35
+export const OCEAN_CAUSTIC_SPOT2_AMP_X = 4
+export const OCEAN_CAUSTIC_SPOT2_AMP_Z = 2
+
+// Caustic light positions
+export const OCEAN_CAUSTIC_DIR_POSITION: [number, number, number] = [5, 15, 5]
+export const OCEAN_CAUSTIC_SPOT1_POSITION: [number, number, number] = [2, 10, 0]
+export const OCEAN_CAUSTIC_SPOT2_POSITION: [number, number, number] = [
+  -3, 12, 2,
+]
+export const OCEAN_CAUSTIC_SPOT1_ANGLE = 0.3
+export const OCEAN_CAUSTIC_SPOT1_PENUMBRA = 0.8
+export const OCEAN_CAUSTIC_SPOT1_DISTANCE = 25
+export const OCEAN_CAUSTIC_SPOT2_ANGLE = 0.25
+export const OCEAN_CAUSTIC_SPOT2_PENUMBRA = 0.9
+export const OCEAN_CAUSTIC_SPOT2_DISTANCE = 20
+export const OCEAN_CAUSTIC_DECAY = 2
+
+// Ocean creature radius formula
+export const OCEAN_CREATURE_RADIUS_BASE = 0.3
+export const OCEAN_CREATURE_RADIUS_SCALE = 0.4
+export const OCEAN_CREATURE_RADIUS_DIVISOR = 50_000
 
 // Cache
 export const CACHE_TTL_TOP10_MS = 1000 * 60 * 60 * 24 // 24 hours

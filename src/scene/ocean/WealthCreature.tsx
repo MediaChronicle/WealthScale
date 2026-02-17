@@ -10,7 +10,13 @@ import {
 } from 'three'
 import type { Group, Mesh } from 'three'
 import { formatWealth } from '@/utils/formatWealth'
-import { TEXT_COLOR, TEXT_OUTLINE_COLOR } from '@/utils/constants'
+import {
+  TEXT_COLOR,
+  TEXT_OUTLINE_COLOR,
+  OCEAN_CREATURE_RADIUS_BASE,
+  OCEAN_CREATURE_RADIUS_SCALE,
+  OCEAN_CREATURE_RADIUS_DIVISOR,
+} from '@/utils/constants'
 import {
   OCEAN_CREATURE_TENTACLE_COUNT,
   OCEAN_CREATURE_BOB_SPEED,
@@ -54,7 +60,10 @@ export function WealthCreature({
   const tentacleRefs = useRef<(Mesh | null)[]>([])
 
   const bodyRadius = useMemo(
-    () => 0.3 + Math.log10(networth / 50_000) * 0.4,
+    () =>
+      OCEAN_CREATURE_RADIUS_BASE +
+      Math.log10(networth / OCEAN_CREATURE_RADIUS_DIVISOR) *
+        OCEAN_CREATURE_RADIUS_SCALE,
     [networth],
   )
 
@@ -130,13 +139,6 @@ export function WealthCreature({
         geometry={UNIT_HEMISPHERE}
         material={bodyMaterial}
         scale={[bodyRadius, bodyRadius, bodyRadius]}
-      />
-
-      <pointLight
-        color={emissiveColor}
-        intensity={0.8}
-        distance={bodyRadius * 6}
-        decay={2}
       />
 
       {tentaclePositions.map((pos, i) => (

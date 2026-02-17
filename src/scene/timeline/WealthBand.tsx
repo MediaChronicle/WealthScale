@@ -16,11 +16,9 @@ import {
 import type { BandDataPoint } from '@/types'
 
 interface WealthBandProps {
-  name: string
   color: string
   dataPoints: BandDataPoint[]
   bandIndex: number
-  totalBands: number
   zScale: number
 }
 

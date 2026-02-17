@@ -14,6 +14,11 @@ import {
   TIMELINE_FOG_FAR,
   TIMELINE_AMBIENT_INTENSITY,
   TIMELINE_SPOTLIGHT_INTENSITY,
+  TIMELINE_SPOTLIGHT_COLOR,
+  TIMELINE_SPOTLIGHT_POSITION,
+  TIMELINE_SPOTLIGHT_ANGLE,
+  TIMELINE_SPOTLIGHT_PENUMBRA,
+  TIMELINE_SPOTLIGHT_DISTANCE,
   TIMELINE_CAMERA_LERP_FACTOR,
   TIMELINE_CAMERA_Y,
   TIMELINE_CAMERA_LOOK_AHEAD,
@@ -50,16 +55,21 @@ export function TimelineMode() {
     [history],
   )
 
+  const monthIndexMap = useMemo(
+    () => new Map((history?.months ?? []).map((m, i) => [m, i] as const)),
+    [history],
+  )
+
   const events = useMemo(() => {
     if (!history) return []
     return NOTABLE_EVENTS.map((event) => {
-      const monthIndex = history.months.indexOf(event.date)
+      const monthIndex = monthIndexMap.get(event.date) ?? -1
       return {
         ...event,
         z: monthIndex >= 0 ? monthIndex * TIMELINE_Z_SCALE : -1,
       }
     }).filter((e) => e.z >= 0)
-  }, [history])
+  }, [history, monthIndexMap])
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
@@ -109,12 +119,12 @@ export function TimelineMode() {
       <ambientLight intensity={TIMELINE_AMBIENT_INTENSITY} />
       <spotLight
         ref={spotlightRef}
-        position={[0, 5, 0]}
-        angle={0.5}
-        penumbra={0.8}
+        position={TIMELINE_SPOTLIGHT_POSITION}
+        angle={TIMELINE_SPOTLIGHT_ANGLE}
+        penumbra={TIMELINE_SPOTLIGHT_PENUMBRA}
         intensity={TIMELINE_SPOTLIGHT_INTENSITY}
-        color="#ffffff"
-        distance={30}
+        color={TIMELINE_SPOTLIGHT_COLOR}
+        distance={TIMELINE_SPOTLIGHT_DISTANCE}
       />
 
       <TimeTunnel length={corridorLength} />
@@ -128,11 +138,9 @@ export function TimelineMode() {
       {history.billionaires.map((billionaire, i) => (
         <WealthBand
           key={billionaire.uri}
-          name={billionaire.name}
           color={billionaire.color}
           dataPoints={billionaire.dataPoints}
           bandIndex={i}
-          totalBands={history.billionaires.length}
           zScale={TIMELINE_Z_SCALE}
         />
       ))}
