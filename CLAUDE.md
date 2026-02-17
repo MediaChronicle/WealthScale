@@ -39,13 +39,15 @@ Full product spec: `doc/PRD.md`
 The app renders two layers simultaneously:
 
 - **3D Canvas** (React Three Fiber) — full-viewport `<Canvas>` with 3D scene
-- **2D HUD Overlay** — DOM elements positioned absolutely over the canvas with `pointer-events-none` (re-enabled on interactive elements)
+- **2D HUD Overlay** — DOM elements positioned absolutely over the canvas with `pointer-events-none` (re-enabled on interactive elements via `pointer-events-auto`)
 
-These layers share state through Zustand. The 3D scene reads from the store and mutates refs in `useFrame`; the 2D UI reads from the store and dispatches actions normally.
+These layers share state through Zustand. The 3D scene reads from the store and mutates refs in `useFrame`; the 2D UI reads from the store and dispatches actions normally. The HUD includes a header bar, `LeaderboardSidebar` (left), and `DetailPanel` (right, lazy-loaded with `AnimatePresence`).
 
 ### Four Visualization Modes
 
 The scene has four mutually exclusive modes (`cosmos | towers | ocean | timeline`), only one mounted at a time. Cosmos is bundled with main; others are `React.lazy` code-split chunks. Mode switching goes through `sceneStore.mode`.
+
+Each mode has an orchestrator component (e.g., `CosmosMode`) that owns its sub-components (sun, planets, orbit rings, camera controller, post-processing). `SceneManager` delegates to the active mode's orchestrator.
 
 ### Data Flow
 
@@ -60,7 +62,9 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 - `src/api/` — fetch client, endpoint URLs, Zod schemas, TanStack Query hooks, data transformers
 - `src/stores/` — Zustand slices (billionaire, scene, user, achievement) combined in `index.ts`
 - `src/scene/` — all R3F 3D components, organized by mode (`cosmos/`, `towers/`, `ocean/`, `timeline/`, `shared/`)
+- `src/scene/cosmos/shaders/` — GLSL shader source strings (e.g., `sunShader.ts` for the WealthSun plasma effect)
 - `src/components/` — 2D DOM UI organized by feature (`detail/`, `leaderboard/`, `comparison/`, `layout/`, `modeSwitcher/`, `funFacts/`, `achievements/`, `ui/`)
+- `src/hooks/` — custom React hooks (`useIsMobile.ts`, etc.)
 - `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `colorByIndustry.ts`, `constants.ts`
 - `src/types/index.ts` — all shared TypeScript types
 - `doc/` — PRD and phase-by-phase implementation plans (PHASE-1 through PHASE-5)
@@ -92,8 +96,11 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 - Reuse geometries/materials via `useMemo`. **Dispose on unmount** with a `useEffect` cleanup (`geometry.dispose()`, `material.dispose()`).
 - Use drei's `useCursor(hovered)` hook for cursor changes — never manipulate `document.body.style.cursor` directly.
 - Use `<Instances>` for repeated meshes (particles, stars).
-- Post-processing (Bloom, Vignette) is disabled on mobile.
+- Post-processing (`Bloom`, `Vignette`, `ChromaticAberration`) is lazy-loaded via `React.lazy` and disabled on mobile (checked via `useIsMobile` hook).
 - Scene colors, lighting values, and other 3D constants live in `src/utils/constants.ts` — never hardcode hex colors or magic numbers in scene components.
+- Custom GLSL shaders are exported as template literal strings from `src/scene/<mode>/shaders/` and consumed by `ShaderMaterial`.
+- 3D components read selection state directly from Zustand (`useAppStore(s => s.selectedUri)`) — avoid prop-drilling callbacks like `onSelect`.
+- Planet positions are tracked via a shared `Map` ref (`planetPositions`) passed from the mode orchestrator, used by `CameraController` for fly-to targeting.
 
 ### State
 
@@ -102,9 +109,9 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 
 ### Animation
 
-- `useFrame` — per-frame 3D (rotation, orbit)
-- `@react-spring/three` — camera transitions, spring-physics 3D interpolation
-- `motion/react` — 2D UI panel enter/exit animations
+- `useFrame` — per-frame 3D (rotation, orbit, position updates)
+- `@react-spring/three` — camera fly-to on planet selection (`CameraController`), hover/scale spring on planets (`animated.mesh`), label fade springs
+- `motion/react` — 2D UI panel enter/exit animations (`AnimatePresence` for `DetailPanel`, slide animations for `LeaderboardSidebar`)
 - GSAP — counter animations, scroll-driven effects
 
 ### API
@@ -122,3 +129,7 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 - Hooks: `useCamelCase.ts`
 - Stores: `camelCaseStore.ts`
 - Utils/shaders: `camelCase.ts`
+
+### Build
+
+- Vite manual chunk splitting is configured in `vite.config.ts` — vendors are split into `react-vendor`, `three-vendor`, `r3f-vendor`, `postprocessing-vendor`, `animation-vendor`, and `ui-vendor`. Add new heavy dependencies to the appropriate chunk.

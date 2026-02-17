@@ -22,6 +22,19 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 
 **Husky hooks**: pre-commit (lint-staged), pre-push. lint-staged runs ESLint --fix + Prettier on staged `.ts/.tsx` files.
 
+## Performance Optimization
+
+**Manual Code Splitting**: Vite config uses `manualChunks` to split vendor libraries:
+
+- `react-vendor` — React + React DOM + scheduler
+- `three-vendor` — Three.js core
+- `r3f-vendor` — @react-three/\* + Zustand
+- `postprocessing-vendor` — Post-processing effects
+- `animation-vendor` — Motion + GSAP + react-spring
+- `ui-vendor` — TanStack Query + Zod + Radix + Lucide
+
+**Mobile Optimization**: Post-processing is disabled on mobile devices (`< 768px`).
+
 ## Code Style Guidelines
 
 ### Imports
@@ -62,8 +75,10 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 - **Prefer granular Zustand selectors**: `useAppStore(s => s.mode)` over `useAppStore()`.
 - **Reuse geometries/materials** via `useMemo`. Dispose on unmount.
 - **Use `<Instances>`** for repeated meshes (particles, stars).
-- **Disable post-processing** on mobile devices.
+- **Disable post-processing** on mobile devices (`< 768px`).
 - **Always dispose** geometries and materials on unmount.
+- **Use `@react-spring/three`** for smooth 3D animations (scale, position, opacity).
+- **Lazy-load heavy components** (DetailPanel, PostProcessing) with `React.lazy()` + `Suspense`.
 
 ### State Management (Zustand)
 
@@ -98,12 +113,14 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 ```
 src/
 ├── api/           # Fetch client, endpoints, Zod schemas, TanStack Query hooks
-├── components/   # 2D DOM UI (detail/, leaderboard/, comparison/, layout/, modeSwitcher/, funFacts/, achievements/, ui/)
-├── scene/        # R3F 3D components organized by mode (cosmos/, towers/, ocean/, timeline/, shared/)
-├── stores/       # Zustand slices (billionaire, scene, user, achievement)
-├── utils/        # Pure functions (formatWealth.ts, wealthMath.ts, colorByIndustry.ts, constants.ts)
-├── types/        # Shared TypeScript types
-└── lib/          # Utilities (utils.ts, etc.)
+├── components/    # 2D DOM UI (detail/, leaderboard/, ui/)
+├── hooks/         # Custom React hooks (useIsMobile.ts)
+├── scene/         # R3F 3D components organized by mode (cosmos/, shared/)
+├── stores/        # Zustand slices (billionaire, scene)
+├── utils/         # Pure functions (formatWealth.ts, wealthMath.ts, constants.ts)
+├── types/         # Shared TypeScript types
+└── lib/           # Utilities (utils.ts, etc.)
+doc/               # Documentation (PRD, tech stack, phase docs)
 ```
 
 ### Dual-Layer Rendering

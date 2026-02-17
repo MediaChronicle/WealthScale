@@ -36,3 +36,55 @@ export const AMBIENT_INTENSITY = 0.15
 // Text labels
 export const TEXT_COLOR = '#e2e8f0'
 export const TEXT_OUTLINE_COLOR = '#000000'
+
+// WealthSun
+export const SUN_GLOW_COLOR = '#FFA500'
+export const SUN_GLOW_OPACITY = 0.15
+export const SUN_GLOW_SCALE = 1.02
+export const SUN_CORONA_COLOR = '#FFD700'
+export const SUN_CORONA_OUTER_COLOR = '#FF8C00'
+export const SUN_CORONA_COUNT = 200
+export const SUN_CORONA_OUTER_COUNT = 100
+export const SUN_CORONA_SIZE = 8
+export const SUN_CORONA_OUTER_SIZE = 4
+export const SUN_CORONA_SCALE_FACTOR = 3
+export const SUN_CORONA_OUTER_SCALE_FACTOR = 5
+export const SUN_CORONA_SPEED = 0.4
+export const SUN_CORONA_OUTER_SPEED = 0.2
+export const SUN_CORONA_OPACITY = 0.6
+export const SUN_CORONA_OUTER_OPACITY = 0.3
+export const SUN_LIGHT_INTENSITY = 3
+export const SUN_LIGHT_COLOR = '#FFE4B5'
+export const SUN_LIGHT_DISTANCE = 200
+export const SUN_LIGHT_DECAY = 2
+export const SUN_PULSE_AMPLITUDE = 0.02
+export const SUN_SHADER_INTENSITY = 3.0
+
+// OrbitRing
+export const ORBIT_RING_WIDTH = 0.02
+export const ORBIT_RING_SEGMENTS = 128
+export const ORBIT_RING_BRIGHTNESS = 0.3
+export const ORBIT_RING_OPACITY = 0.15
+
+// Planet hover
+export const PLANET_HOVER_SCALE = 1.1
+export const PLANET_DEFAULT_SCALE = 1.0
+export const PLANET_HOVER_SPRING = { mass: 1, tension: 200, friction: 20 }
+export const LABEL_SPRING = { mass: 1, tension: 170, friction: 26 }
+
+// Camera
+export const CAMERA_FLY_OFFSET = 6
+export const CAMERA_FLY_HEIGHT = 4
+export const CAMERA_SPRING = { mass: 1, tension: 170, friction: 26 }
+export const EMPTY_SPACE_SPHERE_RADIUS = 500
+
+// PostProcessing
+export const BLOOM_THRESHOLD = 0.8
+export const BLOOM_SMOOTHING = 0.9
+export const BLOOM_INTENSITY = 0.8
+export const VIGNETTE_OFFSET = 0.3
+export const VIGNETTE_DARKNESS = 0.7
+export const CHROMATIC_OFFSET = 0.0005
+
+// Mobile
+export const MOBILE_BREAKPOINT_PX = 768
