@@ -7,9 +7,6 @@ import { DEFAULT_CAMERA_POSITION, DEFAULT_CAMERA_FOV } from '@/utils/constants'
 import { useMemo, useEffect } from 'react'
 import { ZodError } from 'zod'
 
-/**
- * Get a user-friendly error message from various error types
- */
 function getErrorMessage(error: Error): string {
   if (error instanceof ZodError) {
     return 'Failed to parse billionaire data. The API format may have changed.'
@@ -27,7 +24,7 @@ export default function App() {
     isError,
     error,
     refetch,
-  } = useBillionaireList(10)
+  } = useBillionaireList()
   const setBillionaires = useAppStore((s) => s.setBillionaires)
   const selectBillionaire = useAppStore((s) => s.selectBillionaire)
 

@@ -6,10 +6,10 @@
  */
 export function formatWealth(millionsUsd: number): string {
   if (millionsUsd >= 1_000_000) {
-    return `$${(millionsUsd / 1_000_000).toFixed(1)}T`
+    return `$${parseFloat((millionsUsd / 1_000_000).toFixed(1))}T`
   }
   if (millionsUsd >= 1_000) {
-    return `$${(millionsUsd / 1_000).toFixed(1)}B`
+    return `$${parseFloat((millionsUsd / 1_000).toFixed(1))}B`
   }
   if (millionsUsd >= 1) {
     return `$${millionsUsd.toFixed(0)}M`
@@ -23,13 +23,13 @@ export function formatWealth(millionsUsd: number): string {
  */
 export function formatDollars(amount: number): string {
   if (amount >= 1_000_000_000_000) {
-    return `$${(amount / 1_000_000_000_000).toFixed(1)}T`
+    return `$${parseFloat((amount / 1_000_000_000_000).toFixed(1))}T`
   }
   if (amount >= 1_000_000_000) {
-    return `$${(amount / 1_000_000_000).toFixed(1)}B`
+    return `$${parseFloat((amount / 1_000_000_000).toFixed(1))}B`
   }
   if (amount >= 1_000_000) {
-    return `$${(amount / 1_000_000).toFixed(1)}M`
+    return `$${parseFloat((amount / 1_000_000).toFixed(1))}M`
   }
   if (amount >= 1_000) {
     return `$${(amount / 1_000).toFixed(0)}K`

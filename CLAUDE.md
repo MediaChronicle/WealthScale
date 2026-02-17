@@ -67,10 +67,15 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 
 ## Conventions
 
+### TypeScript
+
+- `erasableSyntaxOnly` is enabled — parameter properties (`public x: number` in constructors) are not allowed. Use explicit property declarations + constructor assignments instead.
+- Always define explicit return types on exported functions, especially in `src/utils/` and `src/api/`.
+- Use `import type` for type-only imports (`verbatimModuleSyntax` is enabled).
+
 ### Imports
 
 - Always use `@/` path alias (maps to `src/`). Never use relative paths beyond one level.
-- Use `import type` for type-only imports (`verbatimModuleSyntax` is enabled).
 - Don't use full qualifier names — use direct imports (e.g., `Mesh` not `THREE.Mesh`).
 
 ### Styling
@@ -84,9 +89,11 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 ### React Three Fiber
 
 - **Never `setState` in `useFrame`** — mutate refs directly for 60fps performance.
-- Reuse geometries/materials via `useMemo`. Dispose on unmount.
+- Reuse geometries/materials via `useMemo`. **Dispose on unmount** with a `useEffect` cleanup (`geometry.dispose()`, `material.dispose()`).
+- Use drei's `useCursor(hovered)` hook for cursor changes — never manipulate `document.body.style.cursor` directly.
 - Use `<Instances>` for repeated meshes (particles, stars).
 - Post-processing (Bloom, Vignette) is disabled on mobile.
+- Scene colors, lighting values, and other 3D constants live in `src/utils/constants.ts` — never hardcode hex colors or magic numbers in scene components.
 
 ### State
 
@@ -102,9 +109,12 @@ Profile/asset data is lazy-fetched on planet click via `enabled: !!uri` in `useQ
 
 ### API
 
-- Base URL: `https://cdn.statically.io/gh/komed3/rtb-api@main/api/`
+- Base URL: `https://raw.githubusercontent.com/komed3/rtb-api/main/api`
+- Endpoints don't include file extensions (e.g., `/list/rtb/latest` not `.json`)
 - Net worth values from the API are in **millions USD** (e.g., `774601.062` = $774.6B).
-- TanStack Query with 6-hour staleTime (data updates monthly). Query keys: `["billionaires", "list"]`, `["billionaires", "profile", uri]`, etc.
+- TanStack Query with 6-hour staleTime (data updates monthly). Query keys: `["billionaires", "list"]`, `["billionaires", "profile", uri]`, etc. Cache TTLs are defined as constants (`CACHE_TTL_MS`, `CACHE_TTL_PROFILE_MS`) in `src/utils/constants.ts`.
+- **Zod schemas handle nullable/variable API fields**: `age`, `change`, `gender`, `flag`, and `citizenship` can have null or unexpected values — schemas normalize these with sensible defaults.
+- Scaling math (planet radius, orbit radius, tower height, ocean depth) lives in `src/utils/wealthMath.ts` — always call those functions rather than duplicating formulas.
 
 ### Naming
 

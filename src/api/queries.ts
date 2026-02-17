@@ -6,11 +6,12 @@ import {
   BillionaireProfileSchema,
 } from './schemas'
 import type { BillionaireListEntry, BillionaireProfile } from '@/types'
+import { TOP_BILLIONAIRES_COUNT, CACHE_TTL_PROFILE_MS } from '@/utils/constants'
 
 /**
  * Fetch top billionaires list (top 10 extracted).
  */
-export function useBillionaireList(limit = 10) {
+export function useBillionaireList(limit = TOP_BILLIONAIRES_COUNT) {
   return useQuery({
     queryKey: ['billionaires', 'list', limit],
     queryFn: async (): Promise<BillionaireListEntry[]> => {
@@ -18,7 +19,6 @@ export function useBillionaireList(limit = 10) {
       const validated = BillionaireListResponseSchema.parse(raw)
       return validated.list.slice(0, limit)
     },
-    staleTime: 1000 * 60 * 60 * 6, // 6 hours
   })
 }
 
@@ -33,6 +33,6 @@ export function useBillionaireProfile(uri: string | null) {
       return BillionaireProfileSchema.parse(raw)
     },
     enabled: !!uri,
-    staleTime: 1000 * 60 * 60 * 24, // 24 hours (profiles change rarely)
+    staleTime: CACHE_TTL_PROFILE_MS,
   })
 }

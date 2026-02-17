@@ -110,7 +110,7 @@ export const BillionaireProfileSchema = z.object({
       city: z.string().optional().default(''),
     })
     .optional()
-    .default({}),
+    .default({ country: '', state: '', city: '' }),
   industry: z.array(z.string()).optional().default([]),
   source: z.array(z.string()).optional().default([]),
   image: z.string().optional().default(''),

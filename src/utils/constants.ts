@@ -20,3 +20,19 @@ export const STAR_DEPTH = 100
 // API
 export const TOP_BILLIONAIRES_COUNT = 10
 export const CACHE_TTL_MS = 1000 * 60 * 60 * 6 // 6 hours
+export const CACHE_TTL_PROFILE_MS = 1000 * 60 * 60 * 24 // 24 hours
+
+// Scene colors
+export const SCENE_BG_COLOR = '#0a0a1a'
+export const FOG_COLOR = '#0a0a2e'
+export const FOG_NEAR = 80
+export const FOG_FAR = 200
+
+// Lighting
+export const SUN_COLOR = '#FFE4B5'
+export const SUN_INTENSITY = 2
+export const AMBIENT_INTENSITY = 0.15
+
+// Text labels
+export const TEXT_COLOR = '#e2e8f0'
+export const TEXT_OUTLINE_COLOR = '#000000'

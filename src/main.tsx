@@ -1,13 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { CACHE_TTL_MS } from '@/utils/constants'
 import App from './App'
 import './index.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 60 * 6, // 6 hours
+      staleTime: CACHE_TTL_MS,
       gcTime: 1000 * 60 * 60 * 24, // 24 hours garbage collection
       retry: 2,
       refetchOnWindowFocus: false,

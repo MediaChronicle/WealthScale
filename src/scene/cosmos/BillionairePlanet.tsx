@@ -1,17 +1,17 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Float, Text, Billboard } from '@react-three/drei'
-import { SphereGeometry, MeshPhysicalMaterial, Color, Mesh } from 'three'
+import { Float, Text, Billboard, useCursor } from '@react-three/drei'
+import { SphereGeometry, MeshPhysicalMaterial, Color } from 'three'
+import type { Mesh } from 'three'
 import type { PlanetConfig } from '@/types'
 import { formatWealth } from '@/utils/formatWealth'
+import { TEXT_COLOR, TEXT_OUTLINE_COLOR } from '@/utils/constants'
 
 interface BillionairePlanetProps {
   config: PlanetConfig
-  isSelected?: boolean
   onSelect?: (uri: string) => void
 }
 
-// Generate a deterministic "random" angle based on string hash
 function hashStringToAngle(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -25,6 +25,9 @@ export function BillionairePlanet({
   onSelect,
 }: BillionairePlanetProps) {
   const meshRef = useRef<Mesh>(null)
+  const [hovered, setHovered] = useState(false)
+  useCursor(hovered)
+
   const initialAngle = useMemo(
     () => hashStringToAngle(config.uri),
     [config.uri],
@@ -49,6 +52,14 @@ export function BillionairePlanet({
     [config.color, config.emissiveColor],
   )
 
+  // Dispose GPU resources on unmount or when deps change
+  useEffect(() => {
+    return () => {
+      geometry.dispose()
+      material.dispose()
+    }
+  }, [geometry, material])
+
   // Animate orbit + self-rotation
   useFrame((_, delta) => {
     if (!meshRef.current) return
@@ -71,21 +82,21 @@ export function BillionairePlanet({
         onClick={() => onSelect?.(config.uri)}
         onPointerOver={(e) => {
           e.stopPropagation()
-          document.body.style.cursor = 'pointer'
+          setHovered(true)
         }}
         onPointerOut={() => {
-          document.body.style.cursor = 'auto'
+          setHovered(false)
         }}
       >
         {/* Name label */}
         <Billboard position={[0, config.radius + 0.8, 0]}>
           <Text
             fontSize={0.5}
-            color="#e2e8f0"
+            color={TEXT_COLOR}
             anchorX="center"
             anchorY="bottom"
             outlineWidth={0.02}
-            outlineColor="#000000"
+            outlineColor={TEXT_OUTLINE_COLOR}
           >
             {config.name}
           </Text>
