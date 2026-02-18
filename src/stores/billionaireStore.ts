@@ -1,14 +1,12 @@
 import type { StateCreator } from 'zustand'
-import type { BillionaireListEntry, BillionaireProfile } from '@/types'
+import type { BillionaireListEntry } from '@/types'
 
 export interface BillionaireSlice {
   billionaires: BillionaireListEntry[]
-  profiles: Record<string, BillionaireProfile>
   selectedUri: string | null
 
   setBillionaires: (data: BillionaireListEntry[]) => void
   selectBillionaire: (uri: string | null) => void
-  addProfile: (uri: string, profile: BillionaireProfile) => void
 }
 
 export const createBillionaireSlice: StateCreator<
@@ -18,13 +16,8 @@ export const createBillionaireSlice: StateCreator<
   BillionaireSlice
 > = (set) => ({
   billionaires: [],
-  profiles: {},
   selectedUri: null,
 
   setBillionaires: (data) => set({ billionaires: data }),
   selectBillionaire: (uri) => set({ selectedUri: uri }),
-  addProfile: (uri, profile) =>
-    set((state) => ({
-      profiles: { ...state.profiles, [uri]: profile },
-    })),
 })

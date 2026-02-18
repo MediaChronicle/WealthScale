@@ -37,9 +37,11 @@ export function WealthBand({
 
     dataPoints.forEach((point, i) => {
       const z = point.month * zScale
-      const halfWidth =
+      const halfWidth = Math.min(
         (point.networth / TIMELINE_MAX_NETWORTH_FOR_SCALE) *
-        (TIMELINE_MAX_BAND_WIDTH / 2)
+          (TIMELINE_MAX_BAND_WIDTH / 2),
+        TIMELINE_MAX_BAND_WIDTH / 2,
+      )
 
       const baseY = yOffset
       const topY = yOffset + TIMELINE_BAND_HEIGHT

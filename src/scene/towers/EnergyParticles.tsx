@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Instances, Instance } from '@react-three/drei'
 import { MathUtils } from 'three'
 import type { Object3D } from 'three'
+import { seededRandom } from '@/utils/seededRandom'
 import {
   TOWER_MAX_PARTICLES,
   TOWER_PARTICLE_BASE_COUNT,
@@ -24,12 +25,6 @@ interface Particle {
   z: number
   speed: number
   offset: number
-}
-
-/** Deterministic pseudo-random from seed (avoids React purity lint) */
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 9301 + 49297) * 233280
-  return x - Math.floor(x)
 }
 
 export function EnergyParticles({ height, dailyChange }: EnergyParticlesProps) {

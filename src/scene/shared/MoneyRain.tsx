@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Instances, Instance } from '@react-three/drei'
 import { MathUtils, DoubleSide } from 'three'
 import type { Object3D } from 'three'
+import { seededRandom } from '@/utils/seededRandom'
 import {
   KONAMI_RAIN_PARTICLE_COUNT,
   KONAMI_RAIN_PARTICLE_WIDTH,
@@ -26,11 +27,6 @@ interface RainParticle {
   offset: number
   wobbleSpeed: number
   wobbleAmp: number
-}
-
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 9301 + 49297) * 233280
-  return x - Math.floor(x)
 }
 
 export function MoneyRain({ active }: MoneyRainProps) {

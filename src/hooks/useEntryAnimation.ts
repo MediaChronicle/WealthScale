@@ -18,7 +18,7 @@ interface EntryAnimationResult {
 export function useEntryAnimation(totalPlanets: number): EntryAnimationResult {
   const [starsVisible, setStarsVisible] = useState(hasPlayedEntry)
   const [revealedCount, setRevealedCount] = useState(
-    hasPlayedEntry ? totalPlanets : 0,
+    hasPlayedEntry ? totalPlanets + 1 : 0,
   )
   const [sequenceComplete, setSequenceComplete] = useState(hasPlayedEntry)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])

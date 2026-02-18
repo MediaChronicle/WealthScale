@@ -30,6 +30,7 @@ import { LoadingScreen } from '@/components/layout/LoadingScreen'
 import { AchievementToast } from '@/components/achievements/AchievementToast'
 import { MoneyRain } from '@/scene/shared/MoneyRain'
 import { MobileSheet } from '@/components/layout/MobileSheet'
+import { A11yAnnouncer } from '@react-three/a11y'
 import { ZodError } from 'zod'
 
 const DetailPanel = lazy(() =>
@@ -79,8 +80,8 @@ function ScreenshotBridge({
   onRegister,
 }: {
   onRegister: (fns: {
-    download: () => Promise<void>
-    copy: () => Promise<void>
+    download: () => Promise<boolean>
+    copy: () => Promise<boolean>
   }) => void
 }) {
   const { download, copyToClipboard } = useScreenshot()
@@ -119,15 +120,15 @@ export default function App() {
   const [moneyRainActive, setMoneyRainActive] = useState(false)
   const [gameOpen, setGameOpen] = useState(false)
   const [screenshotFns, setScreenshotFns] = useState<{
-    download: () => Promise<void>
-    copy: () => Promise<void>
+    download: () => Promise<boolean>
+    copy: () => Promise<boolean>
   } | null>(null)
   const [dpr, setDpr] = useState(perfConfig.dprRange[1])
   const [mobileLeaderboard, setMobileLeaderboard] = useState(false)
   const [mobileDetail, setMobileDetail] = useState(false)
 
   // Achievement tracking
-  useAchievements()
+  const { unlockShareTheScale } = useAchievements()
 
   // Konami code
   const handleKonami = useCallback(() => {
@@ -142,19 +143,28 @@ export default function App() {
   )
 
   const handleScreenshotRegister = useCallback(
-    (fns: { download: () => Promise<void>; copy: () => Promise<void> }) => {
+    (fns: {
+      download: () => Promise<boolean>
+      copy: () => Promise<boolean>
+    }) => {
       setScreenshotFns(fns)
     },
     [],
   )
 
-  const handleScreenshotDownload = useCallback(() => {
-    screenshotFns?.download()
-  }, [screenshotFns])
+  const handleScreenshotDownload = useCallback(async (): Promise<boolean> => {
+    if (!screenshotFns) return false
+    const success = await screenshotFns.download()
+    if (success) unlockShareTheScale()
+    return success
+  }, [screenshotFns, unlockShareTheScale])
 
-  const handleScreenshotCopy = useCallback(() => {
-    screenshotFns?.copy()
-  }, [screenshotFns])
+  const handleScreenshotCopy = useCallback(async (): Promise<boolean> => {
+    if (!screenshotFns) return false
+    const success = await screenshotFns.copy()
+    if (success) unlockShareTheScale()
+    return success
+  }, [screenshotFns, unlockShareTheScale])
 
   useEffect(() => {
     if (billionaires) {
@@ -228,6 +238,7 @@ export default function App() {
           </PerformanceMonitor>
           <AdaptiveDpr pixelated />
         </Canvas>
+        <A11yAnnouncer />
 
         {/* Header */}
         <Header

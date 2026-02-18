@@ -10,18 +10,20 @@ import {
 import { cn } from '@/lib/utils'
 
 interface ShareButtonProps {
-  onDownload: () => void
-  onCopy: () => void
+  onDownload: () => Promise<boolean>
+  onCopy: () => Promise<boolean>
 }
 
 export function ShareButton({ onDownload, onCopy }: ShareButtonProps) {
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = useCallback(() => {
-    onCopy()
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopy = useCallback(async () => {
+    const success = await onCopy()
+    if (success) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }, [onCopy])
 
   return (

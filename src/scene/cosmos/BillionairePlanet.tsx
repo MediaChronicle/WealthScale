@@ -1,6 +1,7 @@
 import { useRef, useMemo, useState, useEffect, useCallback } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { Float, Text, Billboard, useCursor } from '@react-three/drei'
+import { A11y } from '@react-three/a11y'
 import { useSpring, animated } from '@react-spring/three'
 import { SphereGeometry, MeshPhysicalMaterial, Color } from 'three'
 import type { Group } from 'three'
@@ -143,47 +144,55 @@ export function BillionairePlanet({
   const a11yDescription = `${config.name}, net worth ${formatWealth(config.networth)}, rank ${config.rank}`
 
   return (
-    <group ref={groupRef} aria-label={a11yDescription}>
-      <Float
-        speed={reducedMotion ? 0 : PLANET_FLOAT_SPEED}
-        floatIntensity={reducedMotion ? 0 : PLANET_FLOAT_INTENSITY}
-        rotationIntensity={reducedMotion ? 0 : PLANET_FLOAT_ROTATION_INTENSITY}
+    <group ref={groupRef}>
+      <A11y
+        role="button"
+        description={a11yDescription}
+        actionCall={handleClick}
       >
-        <animated.mesh
-          geometry={UNIT_SPHERE}
-          material={material}
-          rotation={[0, 0, (config.tilt * Math.PI) / 180]}
-          scale={scale.to((s: number) => s * config.radius)}
-          onClick={handleClick}
-          onPointerOver={handlePointerOver}
-          onPointerOut={handlePointerOut}
+        <Float
+          speed={reducedMotion ? 0 : PLANET_FLOAT_SPEED}
+          floatIntensity={reducedMotion ? 0 : PLANET_FLOAT_INTENSITY}
+          rotationIntensity={
+            reducedMotion ? 0 : PLANET_FLOAT_ROTATION_INTENSITY
+          }
         >
-          {/* Name label */}
-          <Billboard position={[0, config.radius + LABEL_Y_OFFSET, 0]}>
-            <AnimatedText
-              fontSize={LABEL_NAME_FONT_SIZE}
-              color={TEXT_COLOR}
-              anchorX="center"
-              anchorY="bottom"
-              outlineWidth={LABEL_OUTLINE_WIDTH}
-              outlineColor={TEXT_OUTLINE_COLOR}
-              fillOpacity={labelOpacity}
-            >
-              {config.name}
-            </AnimatedText>
-            <AnimatedText
-              fontSize={LABEL_WEALTH_FONT_SIZE}
-              color={config.color}
-              anchorX="center"
-              anchorY="top"
-              position={[0, LABEL_WEALTH_Y_OFFSET, 0]}
-              fillOpacity={labelOpacity}
-            >
-              {formatWealth(config.networth)}
-            </AnimatedText>
-          </Billboard>
-        </animated.mesh>
-      </Float>
+          <animated.mesh
+            geometry={UNIT_SPHERE}
+            material={material}
+            rotation={[0, 0, (config.tilt * Math.PI) / 180]}
+            scale={scale.to((s: number) => s * config.radius)}
+            onClick={handleClick}
+            onPointerOver={handlePointerOver}
+            onPointerOut={handlePointerOut}
+          >
+            {/* Name label */}
+            <Billboard position={[0, config.radius + LABEL_Y_OFFSET, 0]}>
+              <AnimatedText
+                fontSize={LABEL_NAME_FONT_SIZE}
+                color={TEXT_COLOR}
+                anchorX="center"
+                anchorY="bottom"
+                outlineWidth={LABEL_OUTLINE_WIDTH}
+                outlineColor={TEXT_OUTLINE_COLOR}
+                fillOpacity={labelOpacity}
+              >
+                {config.name}
+              </AnimatedText>
+              <AnimatedText
+                fontSize={LABEL_WEALTH_FONT_SIZE}
+                color={config.color}
+                anchorX="center"
+                anchorY="top"
+                position={[0, LABEL_WEALTH_Y_OFFSET, 0]}
+                fillOpacity={labelOpacity}
+              >
+                {formatWealth(config.networth)}
+              </AnimatedText>
+            </Billboard>
+          </animated.mesh>
+        </Float>
+      </A11y>
     </group>
   )
 }

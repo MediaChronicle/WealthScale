@@ -52,7 +52,7 @@ export function WealthRace() {
         const elapsed = stateRef.current.elapsed
         const userAcc = accumulatedWealth(userPerSec, elapsed)
         const billionaireAcc = accumulatedWealth(billionairePerSec, elapsed)
-        const maxAcc = billionaireAcc || 1
+        const maxAcc = Math.max(userAcc, billionaireAcc) || 1
 
         // Direct DOM mutations — no Zustand calls at 60fps
         if (userDisplayRef.current)
@@ -86,6 +86,12 @@ export function WealthRace() {
 
   const handleReset = useCallback(() => {
     timelineRef.current?.kill()
+    if (userDisplayRef.current) userDisplayRef.current.textContent = '$0'
+    if (billionaireDisplayRef.current)
+      billionaireDisplayRef.current.textContent = '$0'
+    if (userBarRef.current) userBarRef.current.style.width = '0%'
+    if (billionaireBarRef.current) billionaireBarRef.current.style.width = '0%'
+    if (timerRef.current) timerRef.current.textContent = '0.0s'
     resetRace()
   }, [resetRace])
 

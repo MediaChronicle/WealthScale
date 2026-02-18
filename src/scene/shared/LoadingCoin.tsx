@@ -7,7 +7,7 @@ import {
   Color,
   DoubleSide,
 } from 'three'
-import type { Mesh } from 'three'
+import type { Group } from 'three'
 import {
   LOADING_COIN_SPIN_SPEED,
   LOADING_COIN_FLOAT_SPEED,
@@ -22,7 +22,7 @@ import {
 } from '@/utils/constants'
 
 export function LoadingCoin() {
-  const groupRef = useRef<Mesh>(null)
+  const groupRef = useRef<Group>(null)
 
   const coinGeometry = useMemo(
     () =>
@@ -92,7 +92,7 @@ export function LoadingCoin() {
       />
       <pointLight position={[-2, -1, 2]} intensity={0.5} color="#ffffff" />
 
-      <group ref={groupRef as React.RefObject<never>}>
+      <group ref={groupRef}>
         {/* Coin body */}
         <mesh
           geometry={coinGeometry}

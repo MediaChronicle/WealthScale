@@ -97,21 +97,22 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 
 `useAchievementStore` is a **standalone** Zustand store with `persist` middleware (NOT a slice in `index.ts` — `persist` is incompatible with the slices combiner). It stores 7 achievements (`first-orbit`, `deep-diver`, `time-traveler`, `reality-check`, `all-modes`, `zoomed-in`, `share-the-scale`) persisted to localStorage under `wealthscale-achievements`.
 
-- `useAchievements()` hook (called in `App.tsx`) auto-detects triggers from app state (mode visits, billionaire clicks, comparison toggle) using `useEffect` + `useAchievementStore.getState()` inside effects (NOT as a selector dependency — avoids re-render churn).
+- `useAchievements()` hook (called in `App.tsx`) auto-detects triggers from app state (mode visits, billionaire clicks, comparison toggle) using `useEffect` + `useAchievementStore.getState()` inside effects (NOT as a selector dependency — avoids re-render churn). Returns `{ unlockShareTheScale }` (and others) — `App.tsx` captures the return value and calls `unlockShareTheScale()` after successful screenshot download/copy.
 - `AchievementToast` subscribes to `latestUnlock`, shows a slide-up toast with confetti, auto-dismisses after 4s.
 - `AchievementBar` renders all 7 badges in a row with tooltips (shadcn `TooltipProvider`).
 
 ### Loading & Entry Animation
 
-- `LoadingScreen` renders a **separate mini `<Canvas>`** (not inside the main Canvas) with a spinning `LoadingCoin`. It overlays the entire viewport at `z-[100]` and fades out (AnimatePresence) when data is ready.
+- `LoadingScreen` renders a **separate mini `<Canvas>`** (not inside the main Canvas) with a spinning `LoadingCoin`. It overlays the entire viewport at `z-[100]` and fades out (AnimatePresence) when data is ready. The `<AnimatePresence>` must always stay mounted — do **not** add an early `return null` guard that would unmount it before exit animation completes.
 - `useEntryAnimation` uses a **module-level `hasPlayedEntry` flag** — the staggered planet reveal plays ONCE per session. On remount (e.g., switching back to cosmos), everything appears instantly.
 - `CosmosMode` wraps each planet in `AnimatedPlanetWrapper` (react-spring scale 0→1). Planets are sorted by rank descending (rank 10 first, rank 1 last = smallest appear first, sun last with bouncy spring).
 
 ### Screenshot & Share
 
-- `useScreenshot()` hook (called inside Canvas context) uses `useThree` to access `gl`, `scene`, `camera`. `capture()` renders the scene, composites a branding bar via offscreen 2D canvas, returns a PNG Blob.
+- `useScreenshot()` hook (called inside Canvas context) uses `useThree` to access `gl`, `scene`, `camera`. `capture()` renders the scene, composites a branding bar via offscreen 2D canvas, returns a PNG Blob. `download()` and `copyToClipboard()` return `Promise<boolean>` indicating success/failure.
+- `copyToClipboard()` passes `capture()` as a Promise directly to `ClipboardItem` (Safari-safe — avoids user-gesture timeout that occurs when awaiting the blob before calling `clipboard.write()`). Falls back to download on failure.
 - `ScreenshotBridge` is a null-rendering component inside `<Canvas>` that passes `download`/`copyToClipboard` callbacks up to App via `onRegister` prop. `GL_CONFIG` includes `preserveDrawingBuffer: true` to enable screenshot capture.
-- `ShareButton` is the UI: camera icon expands to show download + clipboard buttons.
+- `ShareButton` is the UI: camera icon expands to show download + clipboard buttons. "Copied!" feedback only appears after the async copy operation confirms success.
 
 ### Easter Eggs
 
@@ -138,7 +139,7 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - `src/scene/<mode>/shaders/` — GLSL shader source strings (e.g., `cosmos/shaders/sunShader.ts`, `ocean/shaders/waterShader.ts`)
 - `src/components/` — 2D DOM UI organized by feature (`detail/`, `leaderboard/`, `comparison/`, `layout/`, `modeSwitcher/`, `funFacts/`, `achievements/`, `ui/`)
 - `src/hooks/` — custom React hooks (`useIsMobile.ts`, `useReducedMotion.ts`, `useSelectedBillionaire.ts`, `useFunFact.ts`, `useBillionaireTop10History.ts`, `useAchievements.ts`, `useEntryAnimation.ts`, `useScreenshot.ts`, `useKonamiCode.ts`, `useSunEasterEgg.ts`, `useMobilePerformance.ts`, `usePerformanceDebug.ts`)
-- `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `wealthComparison.ts`, `colorByIndustry.ts`, `constants.ts`
+- `src/utils/` — pure functions: `formatWealth.ts`, `wealthMath.ts`, `wealthComparison.ts`, `colorByIndustry.ts`, `seededRandom.ts`, `constants.ts`
 - `src/types/index.ts` — all shared TypeScript types
 - `doc/` — PRD and phase-by-phase implementation plans (PHASE-1 through PHASE-5)
 
@@ -171,7 +172,8 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - `ComparisonResults` wraps dynamic content in `aria-live="polite" role="status"`.
 - `DetailPanel` implements a keyboard focus trap (Tab/Shift-Tab cycles within the panel).
 - `ModeTransition` respects `prefers-reduced-motion` via `useReducedMotion` hook — disables spin animation and uses fast spring config.
-- `BillionairePlanet` respects `prefers-reduced-motion` — disables `Float`, stops orbit animation in `useFrame`, sets static position. Includes `aria-label` with name, net worth, and rank.
+- `BillionairePlanet` respects `prefers-reduced-motion` — disables `Float`, stops orbit animation in `useFrame`, sets static position. Wrapped with `<A11y role="button">` from `@react-three/a11y` for keyboard support (Enter/Space triggers `actionCall`).
+- `App.tsx` renders `<A11yAnnouncer />` from `@react-three/a11y` as a sibling immediately after `</Canvas>` — this is required for screen reader announcements of 3D interactions.
 - `App.tsx` wraps all DOM content in `<MotionConfig reducedMotion={prefersReduced ? "always" : "never"}>`.
 - Skip-to-content link in `App.tsx` uses `focus-visible:` variants.
 
@@ -186,7 +188,7 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - `GL_CONFIG` includes `preserveDrawingBuffer: true` for screenshot capture. `ScreenshotBridge` is a null-rendering component inside Canvas that bridges `useScreenshot()` callbacks to the DOM layer.
 - Scene colors, lighting values, and other 3D constants live in `src/utils/constants.ts` — never hardcode hex colors or magic numbers in scene components. Constants are organized by phase: `// ===== Phase 4: Visualization Modes =====` and `// ===== Phase 5: Polish & Gamification =====`. The canonical accent color is `WS_ACCENT_COLOR` (`#00d4ff`) — use this constant instead of hardcoding the hex value.
 - Avoid per-instance `<pointLight>` on repeated meshes (e.g., ocean creatures) — use shared scene lights + emissive materials instead to keep the light count low.
-- **React 19 purity rule**: Never use `Math.random()` inside `useMemo` or during render. Use a seeded deterministic pseudo-random function instead (see `seededRandom()` in `EnergyParticles.tsx`, `MoneyRain.tsx`, `AchievementToast.tsx`). `Math.random()` is allowed inside `useState` lazy initializers, event handlers, and effects.
+- **React 19 purity rule**: Never use `Math.random()` inside `useMemo` or during render. Use the shared `seededRandom()` from `src/utils/seededRandom.ts`. `Math.random()` is allowed inside `useState` lazy initializers, event handlers, and effects.
 - Custom GLSL shaders are exported as template literal strings from `src/scene/<mode>/shaders/` and consumed by `ShaderMaterial`.
 - 3D components read selection state directly from Zustand (`useAppStore(s => s.selectedUri)`) — avoid prop-drilling callbacks like `onSelect`.
 - Planet positions are tracked via a shared `Map` ref (`planetPositions`) passed from the mode orchestrator, used by `CameraController` for fly-to targeting.
@@ -197,7 +199,9 @@ Math lives in `src/utils/wealthComparison.ts`; constants in the `// ===== Compar
 - Always use granular selectors: `useAppStore(s => s.mode)`, never `useAppStore()`. When a component only needs a boolean derived from an object (e.g., `comparisonResults !== null`), derive the boolean in the selector to avoid re-renders on object identity changes.
 - In `useCallback`, avoid closing over reactive store values that cause the callback to be recreated. Use `useAppStore.getState()` inside the callback to read live values at call time (e.g., `handleToggle` reads `leaderboardOpen` via `getState()`).
 - `leaderboardOpen` / `setLeaderboardOpen` live in `sceneStore` (not local component state).
-- `userStore` holds `comparisonResults`, `wealthRace` (status/elapsed/accumulated), and actions `startRace` / `updateRace` / `finishRace` / `resetRace`. `toggleComparison` was replaced by `setShowComparison(bool)`.
+- `userStore` holds `netWorth`, `showComparison`, `comparisonResults`, `wealthRace` (status/elapsed/accumulated), and actions `setNetWorth` / `setShowComparison` / `setComparisonResults` / `startRace` / `updateRace` / `finishRace` / `resetRace`.
+- `billionaireStore` holds `billionaires` array and `selectedUri` with `setBillionaires` / `selectBillionaire` actions.
+- `sceneStore` holds `mode`, `pendingMode`, `isTransitioning`, `showOrbits`, `leaderboardOpen` with corresponding actions.
 - **Two-phase mode switching** in `sceneStore`: `setMode(mode)` sets `pendingMode` + `isTransitioning=true` (guarded: no-op if already transitioning). `commitMode()` swaps `pendingMode → mode`. `ModeTabs` reads `pendingMode ?? mode` for immediate visual feedback on tab click.
 
 ### Animation

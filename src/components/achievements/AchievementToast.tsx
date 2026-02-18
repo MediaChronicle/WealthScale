@@ -11,6 +11,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import { useAchievementStore, ACHIEVEMENTS } from '@/stores/achievementStore'
+import { seededRandom } from '@/utils/seededRandom'
 import {
   ACHIEVEMENT_TOAST_DURATION_MS,
   ACHIEVEMENT_TOAST_SPRING,
@@ -26,11 +27,6 @@ const ICON_MAP: Record<string, LucideIcon> = {
   LayoutGrid,
   Search,
   Share2,
-}
-
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 9301 + 49297) * 233280
-  return x - Math.floor(x)
 }
 
 function ConfettiParticle({ index }: { index: number }) {

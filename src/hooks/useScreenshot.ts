@@ -46,10 +46,10 @@ function addBranding(source: HTMLCanvasElement): HTMLCanvasElement {
   return canvas
 }
 
-interface ScreenshotActions {
+export interface ScreenshotActions {
   capture: () => Promise<Blob>
-  download: () => Promise<void>
-  copyToClipboard: () => Promise<void>
+  download: () => Promise<boolean>
+  copyToClipboard: () => Promise<boolean>
 }
 
 export function useScreenshot(): ScreenshotActions {
@@ -69,25 +69,32 @@ export function useScreenshot(): ScreenshotActions {
     })
   }, [gl, scene, camera])
 
-  const download = useCallback(async () => {
-    const blob = await capture()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `wealthscale-${Date.now()}.png`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [capture])
-
-  const copyToClipboard = useCallback(async () => {
+  const download = useCallback(async (): Promise<boolean> => {
     try {
       const blob = await capture()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `wealthscale-${Date.now()}.png`
+      a.click()
+      URL.revokeObjectURL(url)
+      return true
+    } catch {
+      return false
+    }
+  }, [capture])
+
+  const copyToClipboard = useCallback(async (): Promise<boolean> => {
+    try {
+      // Pass the Promise directly to ClipboardItem for Safari user-gesture compatibility
       await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob }),
+        new ClipboardItem({ 'image/png': capture() }),
       ])
+      return true
     } catch {
       // Fallback to download if clipboard API unavailable
-      await download()
+      const downloaded = await download()
+      return downloaded
     }
   }, [capture, download])
 

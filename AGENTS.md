@@ -4,7 +4,7 @@ Guidance for AI agents operating in the WealthScale codebase.
 
 ## Project Overview
 
-WealthScale is a 3D interactive wealth visualization app rendering billionaire fortunes as explorable 3D worlds (solar system, city skyline, ocean depths, time tunnel). Features gamification (achievements, mini-games), easter eggs, and social sharing. Pure client-side SPA built with React 19, TypeScript 5.9, Vite 7, Three.js, React Three Fiber, and Zustand.
+WealthScale is a 3D interactive wealth visualization app rendering billionaire fortunes as explorable 3D worlds (solar system, city skyline, ocean depths, time tunnel). Features gamification (achievements, mini-games), easter eggs, and social sharing. Pure client-side SPA built with React 19, TypeScript 5.9 (strict), Vite 7, Three.js, React Three Fiber, and Zustand.
 
 ## Build & Development Commands
 
@@ -44,7 +44,7 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 | Components       | PascalCase       | `BillionaireCard.tsx`   |
 | Hooks            | useCamelCase     | `useBillionaireData.ts` |
 | Stores           | camelCase        | `sceneStore.ts`         |
-| Utils/Shaders    | camelCase        | `formatWealth.ts`       |
+| Utils/Shaders    | camelCase        | `seededRandom.ts`       |
 | Types/Interfaces | PascalCase       | `BillionaireProfile`    |
 | Constants        | UPPER_SNAKE_CASE | `MAX_ZOOM_LEVEL`        |
 
@@ -65,12 +65,19 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 - **Exit animations require condition on child** — early-return guards break exit animations.
 - **Pattern**: `<AnimatePresence>{condition && <Panel />}</AnimatePresence>` in parent.
 - **Reduced motion support** — respect `prefers-reduced-motion` via `useReducedMotion()` hook.
+- **Never unmount AnimatePresence itself** — condition the child inside, not the wrapper.
 
 ### State Management (Zustand)
 
 - **Use slice pattern** — each domain has a `StateCreator`, combined in `src/stores/index.ts`.
 - **Avoid stale closures**: `() => setX(!useAppStore.getState().x)` not `() => setX(!x)`.
 - **Prefer boolean selectors**: `const hasX = useAppStore(s => s.x !== null)`.
+- **Remove dead state** — periodically audit stores for unused state/actions.
+
+### Hooks Patterns
+
+- **Async action return types** — return `Promise<boolean>` for actions like download/copy.
+- **Safari clipboard compatibility** — pass capture Promise directly: `new ClipboardItem({ 'image/png': capture() })`.
 
 ### Styling (Tailwind CSS v4)
 
@@ -90,6 +97,7 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 - **Use `focus-visible` not `focus`** — for keyboard-only focus indicators.
 - **Focus trapping** — modals/panels must trap focus with tab/shift+tab handling.
 - **ARIA attributes** — use proper roles (`role="tablist"`, `role="tab"`), `aria-selected`, `aria-label`.
+- **@react-three/a11y** — wrap interactive 3D elements in `<A11y role="button">` with `description` and `actionCall`.
 
 ### Linting & Formatting
 
@@ -99,16 +107,14 @@ pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
 
 ## Project Architecture
 
-### Directory Structure
-
 ```
 src/
 ├── api/              # Fetch client, endpoints, Zod schemas, TanStack Query hooks
 ├── components/       # 2D DOM UI (achievements/, comparison/, detail/, funFacts/, leaderboard/, layout/, modeSwitcher/, ui/)
-├── hooks/            # Custom React hooks (useSelectedBillionaire, useFunFact, useReducedMotion, etc.)
+├── hooks/            # Custom React hooks
 ├── scene/            # R3F 3D components organized by mode (cosmos/, towers/, ocean/, timeline/, shared/)
 ├── stores/           # Zustand slices (billionaire, scene, user, achievement)
-├── utils/            # Pure functions (formatWealth.ts, wealthMath.ts, constants.ts)
+├── utils/            # Pure functions (formatWealth.ts, wealthMath.ts, constants.ts, seededRandom.ts)
 ├── types/            # Shared TypeScript types
 ├── lib/              # Utilities (utils.ts for cn() helper)
 └── index.css         # Tailwind v4 CSS-first config
@@ -119,13 +125,6 @@ src/
 ```
 RTB-API (CDN) → TanStack Query (6h staleTime) → Zod validation → Zustand store → R3F scene + 2D UI
 ```
-
-## Dependencies
-
-- **React 19** + React DOM 19, **TypeScript 5.9** (strict mode), **Vite 7**
-- **Three.js 0.182** + React Three Fiber + Drei + Postprocessing
-- **Tailwind CSS 4** (CSS-first config), **Zustand 5**, **TanStack Query 5**, **Zod 4**
-- **Motion 12** + GSAP, **shadcn/ui** (New York style)
 
 ## Best Practices
 
@@ -141,19 +140,18 @@ RTB-API (CDN) → TanStack Query (6h staleTime) → Zod validation → Zustand s
 
 From `src/utils/constants.ts`:
 
-- `TRANSITION_COLLAPSE_SPRING` / `TRANSITION_EXPAND_SPRING` / `TRANSITION_REDUCED_CONFIG` — animation springs
+- `TRANSITION_*_SPRING` / `TRANSITION_REDUCED_CONFIG` — animation springs
 - `WS_ACCENT_COLOR` — canonical accent color (replaces `#00d4ff` hardcodes)
-- `TOWER_GLASS_THICKNESS`, `TIMELINE_SPOTLIGHT_*`, `OCEAN_CAUSTIC_*` — 3D scene parameters
-- `CACHE_TTL_TOP10_MS` — 24 hour cache for historical data
-
-### Phase 5: Polish & Gamification Constants
-
-- `ACHIEVEMENT_TOAST_DURATION_MS` / `ACHIEVEMENT_TOAST_SPRING` / `ACHIEVEMENT_CONFETTI_COUNT` — achievement toast system
-- `GUESS_MIN_MILLIONS` / `GUESS_MAX_MILLIONS` / `GUESS_STEP_MILLIONS` / `GUESS_DEFAULT_MILLIONS` / `GUESS_ROUND_COUNT` — Guess the Wealth mini-game
-- `ENTRY_STARS_DELAY_MS` / `ENTRY_PLANET_START_MS` / `ENTRY_PLANET_STAGGER_MS` / `ENTRY_COMPLETE_BUFFER_MS` — entry animation timings
-- `LOADING_COIN_*` — Loading screen 3D coin (spin speed, float, color, emissive, radius, height, segments, metalness, roughness)
-- `KONAMI_RAIN_*` — Konami code easter egg (duration, particle count, sizes, speed, spread, height range, colors)
-- `SUPERNOVA_*` — Sun supernova easter egg (click threshold, reset timeout, explosion/reform durations/scales, sparkle settings)
-- `MOBILE_*` / `DESKTOP_*` — Performance settings (particle count, star count, sphere segments, DPR range)
-- `SCREENSHOT_BRAND_*` — Screenshot branding (padding, height, bg color, text color, accent color)
-- `LS_KEY_ACHIEVEMENTS` — localStorage key for achievement persistence
+- `TOWER_GLASS_THICKNESS`, `TIMELINE_SPOTLIGHT_*`, `OCEAN_CAUSTIC_*` — 3D scene params
+- `CACHE_TTL_*` — cache durations (6h for list, 24h for profiles)
+- `TIMELINE_MAX_BAND_WIDTH` — timeline wealth band clamping
+- `SEEDABLE_RANDOM_*` — deterministic random algorithm constants
+- `ACHIEVEMENT_*` — toast duration, spring, confetti count
+- `GUESS_*` — Guess the Wealth mini-game params
+- `ENTRY_*` — entry animation timings
+- `LOADING_COIN_*` — 3D loading coin appearance
+- `KONAMI_RAIN_*` / `SUPERNOVA_*` — easter egg settings
+- `MOBILE_*` / `DESKTOP_*` — performance settings (particles, stars, DPR)
+- `SCREENSHOT_BRAND_*` — screenshot branding
+- `LS_KEY_ACHIEVEMENTS` — localStorage key for achievements
+- `TIMELINE_SPOTLIGHT_TARGET_Z` — spotlight camera following

@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 
 interface HeaderProps {
   onOpenGame: () => void
-  onScreenshotDownload: () => void
-  onScreenshotCopy: () => void
+  onScreenshotDownload: () => Promise<boolean>
+  onScreenshotCopy: () => Promise<boolean>
 }
 
 export function Header({

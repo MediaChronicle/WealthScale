@@ -30,16 +30,12 @@ const INITIAL_RACE: WealthRaceState = {
 
 export interface UserSlice {
   netWorth: number
-  currency: string
   showComparison: boolean
-  comparisonTarget: string | null
   comparisonResults: ComparisonResults | null
   wealthRace: WealthRaceState
 
   setNetWorth: (value: number) => void
-  setCurrency: (code: string) => void
   setShowComparison: (show: boolean) => void
-  setComparisonTarget: (uri: string | null) => void
   setComparisonResults: (results: ComparisonResults | null) => void
   startRace: () => void
   updateRace: (elapsed: number, userAcc: number, billionaireAcc: number) => void
@@ -51,16 +47,12 @@ export const createUserSlice: StateCreator<UserSlice, [], [], UserSlice> = (
   set,
 ) => ({
   netWorth: 0,
-  currency: 'USD',
   showComparison: false,
-  comparisonTarget: null,
   comparisonResults: null,
   wealthRace: INITIAL_RACE,
 
   setNetWorth: (value) => set({ netWorth: value }),
-  setCurrency: (code) => set({ currency: code }),
   setShowComparison: (show) => set({ showComparison: show }),
-  setComparisonTarget: (uri) => set({ comparisonTarget: uri }),
   setComparisonResults: (results) => set({ comparisonResults: results }),
   startRace: () =>
     set({

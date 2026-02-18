@@ -16,8 +16,6 @@ export function LoadingScreen({ ready }: LoadingScreenProps) {
     return () => clearTimeout(timer)
   }, [ready])
 
-  if (dismissed) return null
-
   return (
     <AnimatePresence>
       {!dismissed && (

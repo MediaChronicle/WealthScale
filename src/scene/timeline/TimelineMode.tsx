@@ -101,6 +101,9 @@ export function TimelineMode() {
 
     if (spotlightRef.current) {
       spotlightRef.current.position.z = cameraZRef.current
+      spotlightRef.current.target.position.z =
+        cameraZRef.current + TIMELINE_CAMERA_LOOK_AHEAD
+      spotlightRef.current.target.updateMatrixWorld()
     }
   })
 
