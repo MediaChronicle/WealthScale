@@ -1,0 +1,228 @@
+{
+  "profiles": {
+    "jeff-bezos": {
+      "name": "Jeff Bezos",
+      "image": "https://specials-images.forbesimg.com/imageserve/67531eb2b5f7c9e191f632d7/416x416.jpg?background=000000&cropX1=316&cropX2=1027&cropY1=125&cropY2=838",
+      "gender": "m",
+      "source": ["Amazon"]
+    },
+    "bernard-arnault": {
+      "name": "Bernard Arnault & family",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5dc05518ca425400079c659f/416x416.jpg?background=000000&cropX1=0&cropX2=4000&cropY1=1209&cropY2=5212",
+      "gender": "m",
+      "source": ["LVMH"]
+    },
+    "bill-gates": {
+      "name": "Bill Gates",
+      "image": "https://specials-images.forbesimg.com/imageserve/62d599ede3ff49f348f9b9b4/416x416.jpg?background=000000&cropX1=155&cropX2=976&cropY1=340&cropY2=1161",
+      "gender": "m",
+      "source": ["Microsoft"]
+    },
+    "warren-buffett": {
+      "name": "Warren Buffett",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5babb7f1a7ea4342a948b79a/416x416.jpg?background=000000&cropX1=748&cropX2=3075&cropY1=1753&cropY2=4082",
+      "gender": "m",
+      "source": ["Berkshire Hathaway"]
+    },
+    "mark-zuckerberg": {
+      "name": "Mark Zuckerberg",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5c76b7d331358e35dd2773a9/416x416.jpg?background=000000&cropX1=0&cropX2=4401&cropY1=0&cropY2=4401",
+      "gender": "m",
+      "source": ["Facebook"]
+    },
+    "amancio-ortega": {
+      "name": "Amancio Ortega",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5c76b94131358e35dd27748e/416x416.jpg?background=000000&cropX1=179&cropX2=2232&cropY1=216&cropY2=2269",
+      "gender": "m",
+      "source": ["Zara"]
+    },
+    "larry-ellison": {
+      "name": "Larry Ellison",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5e8b62cfc095010007bffea0/416x416.jpg?background=000000&cropX1=0&cropX2=4529&cropY1=652&cropY2=5184",
+      "gender": "m",
+      "source": ["Oracle"]
+    },
+    "carlos-slim-helu": {
+      "name": "Carlos Slim Helu & family",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5c76ba144bbe6f24ad99c613/416x416.jpg?background=000000&cropX1=0&cropX2=3005&cropY1=389&cropY2=3395",
+      "gender": "m",
+      "source": ["Telecom"]
+    },
+    "larry-page": {
+      "name": "Larry Page",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5c76bcaaa7ea43100043c836/416x416.jpg?background=000000&cropX1=227&cropX2=2022&cropY1=22&cropY2=1817",
+      "gender": "m",
+      "source": ["Google"]
+    },
+    "sergey-brin": {
+      "name": "Sergey Brin",
+      "image": "https:////specials-images.forbesimg.com/imageserve/5c7d7c254bbe6f78090d831f/416x416.jpg?background=000000&cropX1=475&cropX2=2887&cropY1=168&cropY2=2582",
+      "gender": "m",
+      "source": ["Google"]
+    },
+    "steve-ballmer": {
+      "name": "Steve Ballmer",
+      "image": "https:////specials-images.forbesimg.com/imageserve/59d50c47a7ea436b47b36d66/416x416.jpg?background=000000&cropX1=553&cropX2=2940&cropY1=322&cropY2=2708",
+      "gender": "m",
+      "source": ["Microsoft"]
+    }
+  },
+  "list": {
+    "2019-11": [
+      {
+        "rank": 1,
+        "uri": "jeff-bezos",
+        "networth": 112205.597
+      },
+      {
+        "rank": 2,
+        "uri": "bernard-arnault",
+        "networth": 107143.986
+      },
+      {
+        "rank": 3,
+        "uri": "bill-gates",
+        "networth": 106980.904
+      },
+      {
+        "rank": 4,
+        "uri": "warren-buffett",
+        "networth": 87729.52
+      },
+      {
+        "rank": 5,
+        "uri": "mark-zuckerberg",
+        "networth": 71239.228
+      },
+      {
+        "rank": 6,
+        "uri": "amancio-ortega",
+        "networth": 69832.159
+      },
+      {
+        "rank": 7,
+        "uri": "larry-ellison",
+        "networth": 68716.234
+      },
+      {
+        "rank": 8,
+        "uri": "carlos-slim-helu",
+        "networth": 61783.346
+      },
+      {
+        "rank": 9,
+        "uri": "larry-page",
+        "networth": 59979.736
+      },
+      {
+        "rank": 10,
+        "uri": "sergey-brin",
+        "networth": 57833.715
+      }
+    ],
+    "2019-12": [
+      {
+        "rank": 1,
+        "uri": "bernard-arnault",
+        "networth": 116531.726
+      },
+      {
+        "rank": 2,
+        "uri": "jeff-bezos",
+        "networth": 115629.191
+      },
+      {
+        "rank": 3,
+        "uri": "bill-gates",
+        "networth": 110609.215
+      },
+      {
+        "rank": 4,
+        "uri": "warren-buffett",
+        "networth": 90594.158
+      },
+      {
+        "rank": 5,
+        "uri": "mark-zuckerberg",
+        "networth": 82173.426
+      },
+      {
+        "rank": 6,
+        "uri": "amancio-ortega",
+        "networth": 79034.728
+      },
+      {
+        "rank": 7,
+        "uri": "larry-ellison",
+        "networth": 68171.553
+      },
+      {
+        "rank": 8,
+        "uri": "carlos-slim-helu",
+        "networth": 67283.742
+      },
+      {
+        "rank": 9,
+        "uri": "larry-page",
+        "networth": 66328.909
+      },
+      {
+        "rank": 10,
+        "uri": "sergey-brin",
+        "networth": 63943.955
+      }
+    ],
+    "2020-01": [
+      {
+        "rank": 1,
+        "uri": "jeff-bezos",
+        "networth": 125747.968
+      },
+      {
+        "rank": 2,
+        "uri": "bill-gates",
+        "networth": 112607.415
+      },
+      {
+        "rank": 3,
+        "uri": "bernard-arnault",
+        "networth": 110152.764
+      },
+      {
+        "rank": 4,
+        "uri": "warren-buffett",
+        "networth": 90356.542
+      },
+      {
+        "rank": 5,
+        "uri": "amancio-ortega",
+        "networth": 78800.836
+      },
+      {
+        "rank": 6,
+        "uri": "mark-zuckerberg",
+        "networth": 78071.431
+      },
+      {
+        "rank": 7,
+        "uri": "larry-ellison",
+        "networth": 68432.104
+      },
+      {
+        "rank": 8,
+        "uri": "carlos-slim-helu",
+        "networth": 66439.779
+      },
+      {
+        "rank": 9,
+        "uri": "larry-page",
+        "networth": 66174.821
+      },
+      {
+        "rank": 10,
+        "uri": "steve-ballmer",
+        "networth": 64852.487
+      }
+    ]
+  }
+}
