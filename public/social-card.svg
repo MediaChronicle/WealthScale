@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#101918"/><path d="M60 100H1140M60 552H1140" stroke="#30413b"/>
+<g fill="#b4ecd4"><path d="M60 59h6v17h-6zm11-9h6v26h-6zm11-10h6v36h-6z"/><text x="107" y="69" font-family="sans-serif" font-size="28">WealthScale</text></g>
+<text x="60" y="187" fill="#a2b5ac" font-family="monospace" font-size="14" letter-spacing="3">AN EXPERIMENT IN PERSPECTIVE</text>
+<text x="60" y="273" fill="#edf2e8" font-family="sans-serif" font-size="70">How big is</text><text x="60" y="356" fill="#b4ecd4" font-family="serif" font-style="italic" font-size="85">a billion, really?</text>
+<text x="60" y="426" fill="#a2b5ac" font-family="sans-serif" font-size="22">A little curiosity. A different sense of scale.</text>
+<g transform="translate(830 244)"><path d="M0 30 130-38 260 30 130 100Z" fill="#c2ebd7"/><path d="M0 30 130 100V275L0 205Z" fill="#83b79f"/><path d="M130 100 260 30V205L130 275Z" fill="#689e87"/><g stroke="#c9eee0" opacity=".4"><path d="M0 65 130 135 260 65M0 100 130 170 260 100M0 135 130 205 260 135M0 170 130 240 260 170M26 44V219M52 58V233M78 72V247M104 86V261M156 86V261M182 72V247M208 58V233M234 44V219"/></g></g>
+<text x="60" y="591" fill="#a2b5ac" font-family="monospace" font-size="15">YOUR REFERENCE → A MILLION → A BILLION → A TRILLION</text>
+</svg>
