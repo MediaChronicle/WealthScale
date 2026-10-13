@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/wealthscale.svg" alt="WealthScale logo" width="128">
+</p>
+
 # WealthScale
 
 An interactive experiment in perspective: start with a familiar amount, build a million and a billion, meet a real fortune, and explore a hypothetical trillion.
