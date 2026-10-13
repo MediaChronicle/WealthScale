@@ -26,6 +26,11 @@ pnpm preflight
 
 `pnpm preflight` runs TypeScript, ESLint, formatting, tests, and a production build. `pnpm preview` serves the build; `pnpm build:analyze` writes `dist/bundle-report.html`. `pnpm brand:build` regenerates PNG brand assets from the SVG sources.
 
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes and
+[SECURITY.md](SECURITY.md) before reporting a security issue. The repository
+source uses the [MIT license](LICENSE). External wealth estimates and third-party
+assets retain their own terms.
+
 ## Experience
 
 - Six guided chapters, including a prediction before revealing 1,000 million-dollar blocks.
