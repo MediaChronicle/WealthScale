@@ -59,6 +59,11 @@ export function Explorer({
   const choices = world === 'timeline' ? historicalChoices : people
   const chosen =
     choices.find((person) => person.uri === selected) ?? people[0] ?? choices[0]
+  const selectMonth = (value: string | null): void => {
+    // Keep the displayed default fortune when another month has a new leader.
+    if (chosen) setSelected(chosen.uri)
+    setMonth(value)
+  }
   const target =
     world === 'timeline' && chosen
       ? {
@@ -218,7 +223,7 @@ export function Explorer({
                 <select
                   id="history-month"
                   value={currentMonth}
-                  onChange={(event) => setMonth(event.target.value)}
+                  onChange={(event) => selectMonth(event.target.value)}
                 >
                   {history.data.months.map((date) => (
                     <option key={date}>{date}</option>
@@ -231,7 +236,7 @@ export function Explorer({
                   max={Math.max(0, history.data.months.length - 1)}
                   value={Math.max(0, history.data.months.indexOf(currentMonth))}
                   onChange={(event) =>
-                    setMonth(
+                    selectMonth(
                       history.data?.months[Number(event.target.value)] ?? null,
                     )
                   }
@@ -275,7 +280,7 @@ export function Explorer({
                       }
                       onClick={() =>
                         timeline
-                          ? setMonth(person.uri)
+                          ? selectMonth(person.uri)
                           : setSelected(person.uri)
                       }
                     >
@@ -306,7 +311,7 @@ export function Explorer({
                     timeline={timeline}
                     people={people}
                     selected={target?.uri ?? ''}
-                    onSelect={world === 'timeline' ? setMonth : setSelected}
+                    onSelect={world === 'timeline' ? selectMonth : setSelected}
                     maximum={maximum}
                     reset={reset}
                     quality={quality}
@@ -335,7 +340,9 @@ export function Explorer({
                 <li key={person.uri}>
                   <button
                     onClick={() =>
-                      timeline ? setMonth(person.uri) : setSelected(person.uri)
+                      timeline
+                        ? selectMonth(person.uri)
+                        : setSelected(person.uri)
                     }
                     aria-pressed={!timeline && target?.uri === person.uri}
                   >
