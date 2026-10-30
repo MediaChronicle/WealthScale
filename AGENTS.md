@@ -1,157 +1,42 @@
-# WealthScale Agent Guidelines
+# WealthScale agent guidelines
 
-Guidance for AI agents operating in the WealthScale codebase.
+## Working rules
 
-## Project Overview
+Inspect branch, staged and unstaged changes, instructions, and runtime before editing. Preserve unrelated work. Reviews are read-only unless implementation is requested. Never stage, commit, push, merge, delete unrelated work, or delegate silently. Only use subagents when explicitly requested by the user; delegation stays one level deep. Verify completion with fresh evidence and describe limitations.
 
-WealthScale is a 3D interactive wealth visualization app rendering billionaire fortunes as explorable 3D worlds (solar system, city skyline, ocean depths, time tunnel). Features gamification (achievements, mini-games), easter eggs, and social sharing. Pure client-side SPA built with React 19, TypeScript 5.9 (strict), Vite 7, Three.js, React Three Fiber, and Zustand.
+For multi-component features, document a concise Mermaid architecture diagram, followed by production and test call stacks, implementation steps, risks, and verification criteria. Keep implementation simple and within the authorized scope.
 
-## Build & Development Commands
+## Active architecture
 
-```bash
-pnpm dev              # Start dev server (Vite 7, port 5173)
-pnpm build            # Type-check (tsc -b) then build for production
-pnpm build:analyze    # Build and visualize bundle size
-pnpm lint             # ESLint on all .ts/.tsx files
-pnpm preview          # Preview production build locally
-pnpm vitest run       # Run tests once
-pnpm vitest run <file>  # Run single test file
-pnpm format           # Format all source files with Prettier
-pnpm format:check     # Check formatting without modifying files
-pnpm dlx shadcn@latest add <component>  # Add shadcn/ui components
-```
+WealthScale is a client-side React 19 / TypeScript / Vite application. The guided journey leads into Cosmos, Towers, Ocean, and a selected-person monthly Timeline. React owns local state; TanStack Query owns validated remote data. No application Zustand store, motion framework, shadcn layer, or Tailwind utilities are used.
 
-**Husky hooks**: pre-commit runs `lint-staged` (ESLint --fix + Prettier on staged `.ts/.tsx` files).
+- `src/features/journey`: chapter flow, scale math, instanced assembly and comparisons.
+- `src/features/explorer`: worlds, timeline, inspector and guessing game.
+- `src/features/comparison`: shared reference validation and input.
+- `src/features/shared`: shared visual shell.
+- `src/api`: abortable fetch, schemas, ranked USD snapshots, history and fixtures.
+- `src/scene/lab`: shared canvas, finite camera transitions, labels and WebGL fallback.
 
-## Code Style Guidelines
+Read README.md and the review remediation plan for product/data semantics.
 
-### Imports
+## Development
 
-- **Always use `@/` path alias** (maps to `src/`). Never use relative paths beyond one level.
-- **Use `import type`** for type-only imports (required by `verbatimModuleSyntax`).
-- **Direct imports only** — never use full qualifier names (`import { Mesh } from "three"` not `import * as THREE`).
+Use Node 24 and pnpm 12.4.2, pinned in the repository. `pnpm dev`, `pnpm preflight`, `pnpm build:analyze`, `pnpm brand:build`. Preflight runs typecheck, ESLint, Prettier, Vitest and the production build. Preserve frozen-lockfile reproducibility and verify peers after dependency changes.
 
-### TypeScript
+## Code conventions
 
-- **Strict mode enabled** — all TypeScript rules enforced.
-- **No type suppression** — never use `as any`, `@ts-ignore`, or `@ts-expect-error`.
-- **Always define return types** for functions, especially utilities and hooks.
+Use `@/` aliases across feature boundaries; relative imports within a directory are fine. Use direct and type-only imports, explicit function return types, strict TypeScript, and no type suppression. Components are PascalCase; hooks start with use; utilities camelCase; constants UPPER_SNAKE_CASE. Prettier: single quotes, no semicolons, trailing commas, 80 columns.
 
-### Naming Conventions
+## Rendering and interaction
 
-| Element          | Convention       | Example                 |
-| ---------------- | ---------------- | ----------------------- |
-| Components       | PascalCase       | `BillionaireCard.tsx`   |
-| Hooks            | useCamelCase     | `useBillionaireData.ts` |
-| Stores           | camelCase        | `sceneStore.ts`         |
-| Utils/Shaders    | camelCase        | `seededRandom.ts`       |
-| Types/Interfaces | PascalCase       | `BillionaireProfile`    |
-| Constants        | UPPER_SNAKE_CASE | `MAX_ZOOM_LEVEL`        |
+Use demand rendering, bounded geometry and instancing. Never set React state in useFrame. Finite animations mutate refs and invalidate only while active. Share geometry and dispose manually created resources. Native OrbitControls owns the camera; avoid competing writers. Wheel and one-finger gestures scroll the page; zoom is explicit and two fingers orbit. Disable scroll-driven Canvas resize measurement. Keep reduced-motion behavior and mobile/economy limits. Do not add perpetual decorative effects.
 
-### React & Three.js Patterns
+Million-dollar unit size stays fixed through the billion reveal. Larger units must disclose regrouping and retain a labelled scale anchor. Dollar volume, linear height, and depth must match their legends; camera framing is illustrative. Missing data is not zero wealth. Never silently present benchmark values as real fortunes or net worth as income.
 
-- **Never set state in `useFrame`** — mutate refs directly for 60fps performance.
-- **Use memoization** (`useMemo`, `useCallback`) for expensive operations.
-- **Granular Zustand selectors**: `useAppStore(s => s.mode)` over `useAppStore()`.
-- **Reuse geometries/materials** via `useMemo`. Always dispose on unmount.
-- **Use `<Instances>`** for repeated meshes (particles, stars).
-- **Disable post-processing** on mobile (`< 768px`).
-- **3D Geometry scaling**: Create **unit geometry once** as module-level constant and control size via `mesh.scale`.
+## UI and accessibility
 
-### Animation Patterns (motion/react)
+Plain CSS uses shared `--lab-*` tokens in shell.css and font variables in index.css. Preserve charcoal/mint identity, readable prose (at least 12px), targets at least 44px, focus-visible indicators, semantic buttons, keyboard tabs, native dialog focus restoration, and source dates. DOM selectors and labelled scene keys provide keyboard equivalents for pointer-only meshes; do not reintroduce separate React roots for each mesh. Keep input before the exhibit on mobile chapter zero. Preserve page scrolling and safe areas.
 
-- **Individual `<AnimatePresence>` per component** — not a shared wrapper.
-- **Condition on the child** — put condition on motion component inside `<AnimatePresence>`, not as early return.
-- **Exit animations require condition on child** — early-return guards break exit animations.
-- **Pattern**: `<AnimatePresence>{condition && <Panel />}</AnimatePresence>` in parent.
-- **Reduced motion support** — respect `prefers-reduced-motion` via `useReducedMotion()` hook.
-- **Never unmount AnimatePresence itself** — condition the child inside, not the wrapper.
+## Validation
 
-### State Management (Zustand)
-
-- **Use slice pattern** — each domain has a `StateCreator`, combined in `src/stores/index.ts`.
-- **Avoid stale closures**: `() => setX(!useAppStore.getState().x)` not `() => setX(!x)`.
-- **Prefer boolean selectors**: `const hasX = useAppStore(s => s.x !== null)`.
-- **Remove dead state** — periodically audit stores for unused state/actions.
-
-### Hooks Patterns
-
-- **Async action return types** — return `Promise<boolean>` for actions like download/copy.
-- **Safari clipboard compatibility** — pass capture Promise directly: `new ClipboardItem({ 'image/png': capture() })`.
-
-### Styling (Tailwind CSS v4)
-
-- **CSS-first config** — no `tailwind.config.js`. Tokens in `src/index.css` via `@theme`.
-- **WealthScale colors** use `--ws-*` CSS variables (`bg-ws-glass`, `text-ws-accent`).
-- **Glass panel pattern**: `bg-ws-glass backdrop-blur-xl border border-ws-border rounded-2xl`
-- **Dark theme only** — `.dark` is permanently on `<html>`.
-- **Numeric displays**: Use `tabular-nums` class for numbers.
-
-### Error Handling
-
-- **Never use empty catch blocks** (`catch(e) {}`).
-- **Always handle async errors** with try/catch or `.catch()`.
-
-### Accessibility
-
-- **Use `focus-visible` not `focus`** — for keyboard-only focus indicators.
-- **Focus trapping** — modals/panels must trap focus with tab/shift+tab handling.
-- **ARIA attributes** — use proper roles (`role="tablist"`, `role="tab"`), `aria-selected`, `aria-label`.
-- **@react-three/a11y** — wrap interactive 3D elements in `<A11y role="button">` with `description` and `actionCall`.
-
-### Linting & Formatting
-
-**Prettier config**: no semicolons, single quotes, trailing commas, 80 char width, arrow parens always.
-
-**ESLint** extends: `js.configs.recommended`, `tseslint.configs.recommended`, `reactHooks.configs.flat.recommended`, `reactRefresh.configs.vite`.
-
-## Project Architecture
-
-```
-src/
-├── api/              # Fetch client, endpoints, Zod schemas, TanStack Query hooks
-├── components/       # 2D DOM UI (achievements/, comparison/, detail/, funFacts/, leaderboard/, layout/, modeSwitcher/, ui/)
-├── hooks/            # Custom React hooks
-├── scene/            # R3F 3D components organized by mode (cosmos/, towers/, ocean/, timeline/, shared/)
-├── stores/           # Zustand slices (billionaire, scene, user, achievement)
-├── utils/            # Pure functions (formatWealth.ts, wealthMath.ts, constants.ts, seededRandom.ts)
-├── types/            # Shared TypeScript types
-├── lib/              # Utilities (utils.ts for cn() helper)
-└── index.css         # Tailwind v4 CSS-first config
-```
-
-### Data Flow
-
-```
-RTB-API (CDN) → TanStack Query (6h staleTime) → Zod validation → Zustand store → R3F scene + 2D UI
-```
-
-## Best Practices
-
-1. **Performance first** — optimize for 60fps in 3D scenes
-2. **Use code splitting** — mode components are lazy-loaded
-3. **Follow existing patterns** — match the codebase style exactly
-4. **Keep components small** — single responsibility principle
-5. **Use TypeScript properly** — avoid `any`, use proper types
-6. **Accessibility** — use `@react-three/a11y` for 3D accessibility
-7. **Mobile-first** — disable expensive effects on mobile
-
-## Key Constants
-
-From `src/utils/constants.ts`:
-
-- `TRANSITION_*_SPRING` / `TRANSITION_REDUCED_CONFIG` — animation springs
-- `WS_ACCENT_COLOR` — canonical accent color (replaces `#00d4ff` hardcodes)
-- `TOWER_GLASS_THICKNESS`, `TIMELINE_SPOTLIGHT_*`, `OCEAN_CAUSTIC_*` — 3D scene params
-- `CACHE_TTL_*` — cache durations (6h for list, 24h for profiles)
-- `TIMELINE_MAX_BAND_WIDTH` — timeline wealth band clamping
-- `SEEDABLE_RANDOM_*` — deterministic random algorithm constants
-- `ACHIEVEMENT_*` — toast duration, spring, confetti count
-- `GUESS_*` — Guess the Wealth mini-game params
-- `ENTRY_*` — entry animation timings
-- `LOADING_COIN_*` — 3D loading coin appearance
-- `KONAMI_RAIN_*` / `SUPERNOVA_*` — easter egg settings
-- `MOBILE_*` / `DESKTOP_*` — performance settings (particles, stars, DPR)
-- `SCREENSHOT_BRAND_*` — screenshot branding
-- `LS_KEY_ACHIEVEMENTS` — localStorage key for achievements
-- `TIMELINE_SPOTLIGHT_TARGET_Z` — spotlight camera following
+Test behavior at domain seams and DOM contracts: ordering/units, missing observations, provenance, input gating, game state, rendering availability and gestures. Browser-review changed visual paths and measure idle counters after animations settle. Do not claim physical-device FPS, touch, context restoration or remote CI without testing those exact paths. Handle async failures; no empty catch blocks or silent data fabrication.
